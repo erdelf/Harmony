@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Harmony")]
+[assembly: AssemblyTitle("erdelfsHarmony")]
 [assembly: AssemblyDescription("A general non-destructive patch library for .NET 2 modules")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Andreas Pardeike")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Harmony")]
-[assembly: AssemblyCopyright("Copyright © 2016")]
+[assembly: AssemblyCopyright("Copyright © 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

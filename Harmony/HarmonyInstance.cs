@@ -9,18 +9,18 @@ namespace Harmony
 {
 	public class Patches
 	{
-		public readonly ReadOnlyCollection<Patch> Prefixes;
-		public readonly ReadOnlyCollection<Patch> Postfixes;
-		public readonly ReadOnlyCollection<Patch> Transpilers;
+		public readonly ReadOnlyCollection<Patch> prefixes;
+		public readonly ReadOnlyCollection<Patch> postfixes;
+		public readonly ReadOnlyCollection<Patch> transpilers;
 
 		public ReadOnlyCollection<string> Owners
 		{
 			get
 			{
-				var result = new HashSet<string>();
-				result.UnionWith(Prefixes.Select(p => p.owner));
-				result.UnionWith(Postfixes.Select(p => p.owner));
-				result.UnionWith(Postfixes.Select(p => p.owner));
+                HashSet<string> result = new HashSet<string>();
+				result.UnionWith(this.prefixes.Select(p => p.owner));
+				result.UnionWith(this.postfixes.Select(p => p.owner));
+				result.UnionWith(this.postfixes.Select(p => p.owner));
 				return result.ToList().AsReadOnly();
 			}
 		}
@@ -31,79 +31,67 @@ namespace Harmony
 			if (postfixes == null) postfixes = new Patch[0];
 			if (transpilers == null) transpilers = new Patch[0];
 
-			Prefixes = prefixes.ToList().AsReadOnly();
-			Postfixes = postfixes.ToList().AsReadOnly();
-			Transpilers = transpilers.ToList().AsReadOnly();
+            this.prefixes = prefixes.ToList().AsReadOnly();
+            this.postfixes = postfixes.ToList().AsReadOnly();
+            this.transpilers = transpilers.ToList().AsReadOnly();
 		}
 	}
 
 	public class HarmonyInstance
 	{
 		readonly string id;
-		public string Id => id;
-		public static bool DEBUG = false;
+		public string Id => this.id;
+		public static bool debug = false;
 
-		HarmonyInstance(string id)
-		{
-			this.id = id;
-		}
+        HarmonyInstance(string id) => this.id = id;
 
-		public static HarmonyInstance Create(string id)
+        public static HarmonyInstance Create(string id)
 		{
 			if (id == null) throw new Exception("id cannot be null");
 			return new HarmonyInstance(id);
 		}
 
-		//
+        //
 
-		public void PatchAll(Assembly assembly)
-		{
-			assembly.GetTypes().Do(type =>
-			{
-				var parentMethodInfos = type.GetHarmonyMethods();
-				if (parentMethodInfos != null && parentMethodInfos.Count() > 0)
-				{
-					var info = HarmonyMethod.Merge(parentMethodInfos);
-					var processor = new PatchProcessor(this, type, info);
-					processor.Patch();
-				}
-			});
-		}
+        public void PatchAll(Assembly assembly) => assembly.GetTypes().Do(type =>
+                                                   {
+                                                       List<HarmonyMethod> parentMethodInfos = type.GetHarmonyMethods();
+                                                       if (parentMethodInfos != null && parentMethodInfos.Count() > 0)
+                                                       {
+                                                           HarmonyMethod info = HarmonyMethod.Merge(parentMethodInfos);
+                                                           PatchProcessor processor = new PatchProcessor(this, type, info);
+                                                           processor.Patch();
+                                                       }
+                                                   });
 
-		public void Patch(MethodBase original, HarmonyMethod prefix, HarmonyMethod postfix, HarmonyMethod transpiler = null)
+        public void Patch(MethodBase original, HarmonyMethod prefix, HarmonyMethod postfix, HarmonyMethod transpiler = null)
 		{
-			var processor = new PatchProcessor(this, original, prefix, postfix, transpiler);
+            PatchProcessor processor = new PatchProcessor(this, original, prefix, postfix, transpiler);
 			processor.Patch();
 		}
 
-		//
+        //
 
-		public Patches IsPatched(MethodBase method)
-		{
-			return PatchProcessor.IsPatched(method);
-		}
+        public Patches IsPatched(MethodBase method) => PatchProcessor.IsPatched(method);
 
-		public IEnumerable<MethodBase> GetPatchedMethods()
-		{
-			return HarmonySharedState.GetPatchedMethods();
-		}
+        public IEnumerable<MethodBase> GetPatchedMethods() => HarmonySharedState.GetPatchedMethods();
 
-		public Dictionary<string, Version> VersionInfo(out Version currentVersion)
+        public Dictionary<string, Version> VersionInfo(out Version currentVersion)
 		{
 			currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-			var assemblies = new Dictionary<string, Assembly>();
+            Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
 			GetPatchedMethods().Do(method =>
 			{
-				var info = HarmonySharedState.GetPatchInfo(method);
+                PatchInfo info = HarmonySharedState.GetPatchInfo(method);
 				info.prefixes.Do(fix => assemblies[fix.owner] = fix.patch.DeclaringType.Assembly);
 				info.postfixes.Do(fix => assemblies[fix.owner] = fix.patch.DeclaringType.Assembly);
 				info.transpilers.Do(fix => assemblies[fix.owner] = fix.patch.DeclaringType.Assembly);
 			});
 
-			var result = new Dictionary<string, Version>();
+            Dictionary<string, Version> result = new Dictionary<string, Version>();
 			assemblies.Do(info =>
 			{
-				var assemblyName = info.Value.GetReferencedAssemblies().FirstOrDefault(a => a.FullName.StartsWith("0Harmony, Version"));
+                AssemblyName assemblyName = info.Value.GetReferencedAssemblies().FirstOrDefault(a => a.FullName.StartsWith("0Harmony, Version"));
 				if (assemblyName != null)
 					result[info.Key] = assemblyName.Version;
 			});

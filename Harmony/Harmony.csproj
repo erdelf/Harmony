@@ -7,8 +7,8 @@
     <ProjectGuid>{69AEE16A-B6E7-4642-8081-3928B32455DF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Harmony</RootNamespace>
-    <AssemblyName>0Harmony</AssemblyName>
+    <RootNamespace>erdelfsHarmony</RootNamespace>
+    <AssemblyName>erdelfsHarmony</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

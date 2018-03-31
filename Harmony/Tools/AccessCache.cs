@@ -13,17 +13,15 @@ namespace Harmony
 
 		public FieldInfo GetFieldInfo(Type type, string name)
 		{
-			Dictionary<string, FieldInfo> fieldsByType = null;
-			fields.TryGetValue(type, out fieldsByType);
-			if (fieldsByType == null)
+            this.fields.TryGetValue(type, out Dictionary<string, FieldInfo> fieldsByType);
+            if (fieldsByType == null)
 			{
 				fieldsByType = new Dictionary<string, FieldInfo>();
-				fields.Add(type, fieldsByType);
+                this.fields.Add(type, fieldsByType);
 			}
 
-			FieldInfo field = null;
-			fieldsByType.TryGetValue(name, out field);
-			if (field == null)
+            fieldsByType.TryGetValue(name, out FieldInfo field);
+            if (field == null)
 			{
 				field = AccessTools.Field(type, name);
 				fieldsByType.Add(name, field);
@@ -33,17 +31,15 @@ namespace Harmony
 
 		public PropertyInfo GetPropertyInfo(Type type, string name)
 		{
-			Dictionary<string, PropertyInfo> propertiesByType = null;
-			properties.TryGetValue(type, out propertiesByType);
-			if (propertiesByType == null)
+            this.properties.TryGetValue(type, out Dictionary<string, PropertyInfo> propertiesByType);
+            if (propertiesByType == null)
 			{
 				propertiesByType = new Dictionary<string, PropertyInfo>();
-				properties.Add(type, propertiesByType);
+                this.properties.Add(type, propertiesByType);
 			}
 
-			PropertyInfo property = null;
-			propertiesByType.TryGetValue(name, out property);
-			if (property == null)
+            propertiesByType.TryGetValue(name, out PropertyInfo property);
+            if (property == null)
 			{
 				property = AccessTools.Property(type, name);
 				propertiesByType.Add(name, property);
@@ -56,7 +52,7 @@ namespace Harmony
 			int hash1 = (5381 << 16) + 5381;
 			int hash2 = hash1;
 			int i = 0;
-			foreach (var obj in objects)
+			foreach (object obj in objects)
 			{
 				if (i % 2 == 0)
 					hash1 = ((hash1 << 5) + hash1 + (hash1 >> 27)) ^ obj.GetHashCode();
@@ -69,25 +65,22 @@ namespace Harmony
 
 		public MethodBase GetMethodInfo(Type type, string name, Type[] arguments)
 		{
-			Dictionary<string, Dictionary<int, MethodBase>> methodsByName = null;
-			methods.TryGetValue(type, out methodsByName);
-			if (methodsByName == null)
+            this.methods.TryGetValue(type, out Dictionary<string, Dictionary<int, MethodBase>> methodsByName);
+            if (methodsByName == null)
 			{
 				methodsByName = new Dictionary<string, Dictionary<int, MethodBase>>();
-				methods.Add(type, methodsByName);
+                this.methods.Add(type, methodsByName);
 			}
 
-			Dictionary<int, MethodBase> methodsByArguments = null;
-			methodsByName.TryGetValue(name, out methodsByArguments);
-			if (methodsByArguments == null)
+            methodsByName.TryGetValue(name, out Dictionary<int, MethodBase> methodsByArguments);
+            if (methodsByArguments == null)
 			{
 				methodsByArguments = new Dictionary<int, MethodBase>();
 				methodsByName.Add(name, methodsByArguments);
 			}
 
-			MethodBase method = null;
-			var argumentsHash = CombinedHashCode(arguments);
-			methodsByArguments.TryGetValue(argumentsHash, out method);
+            int argumentsHash = CombinedHashCode(arguments);
+            methodsByArguments.TryGetValue(argumentsHash, out MethodBase method);
 			if (method == null)
 			{
 				method = AccessTools.Method(type, name, arguments);

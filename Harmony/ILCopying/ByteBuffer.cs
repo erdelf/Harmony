@@ -7,61 +7,58 @@ namespace Harmony.ILCopying
 		public byte[] buffer;
 		public int position;
 
-		public ByteBuffer(byte[] buffer)
-		{
-			this.buffer = buffer;
-		}
+        public ByteBuffer(byte[] buffer) => this.buffer = buffer;
 
-		public byte ReadByte()
+        public byte ReadByte()
 		{
 			CheckCanRead(1);
-			return buffer[position++];
+			return this.buffer[this.position++];
 		}
 
 		public byte[] ReadBytes(int length)
 		{
 			CheckCanRead(length);
-			var value = new byte[length];
-			Buffer.BlockCopy(buffer, position, value, 0, length);
-			position += length;
+            byte[] value = new byte[length];
+			Buffer.BlockCopy(this.buffer, this.position, value, 0, length);
+            this.position += length;
 			return value;
 		}
 
 		public short ReadInt16()
 		{
 			CheckCanRead(2);
-			var value = (short)(buffer[position]
-				| (buffer[position + 1] << 8));
-			position += 2;
+            short value = (short)(this.buffer[this.position]
+				| (this.buffer[this.position + 1] << 8));
+            this.position += 2;
 			return value;
 		}
 
 		public int ReadInt32()
 		{
 			CheckCanRead(4);
-			int value = buffer[position]
-				| (buffer[position + 1] << 8)
-				| (buffer[position + 2] << 16)
-				| (buffer[position + 3] << 24);
-			position += 4;
+			int value = this.buffer[this.position]
+				| (this.buffer[this.position + 1] << 8)
+				| (this.buffer[this.position + 2] << 16)
+				| (this.buffer[this.position + 3] << 24);
+            this.position += 4;
 			return value;
 		}
 
 		public long ReadInt64()
 		{
 			CheckCanRead(8);
-			var low = (uint)(buffer[position]
-				| (buffer[position + 1] << 8)
-				| (buffer[position + 2] << 16)
-				| (buffer[position + 3] << 24));
+            uint low = (uint)(this.buffer[this.position]
+				| (this.buffer[this.position + 1] << 8)
+				| (this.buffer[this.position + 2] << 16)
+				| (this.buffer[this.position + 3] << 24));
 
-			var high = (uint)(buffer[position + 4]
-				| (buffer[position + 5] << 8)
-				| (buffer[position + 6] << 16)
-				| (buffer[position + 7] << 24));
+            uint high = (uint)(this.buffer[this.position + 4]
+				| (this.buffer[this.position + 5] << 8)
+				| (this.buffer[this.position + 6] << 16)
+				| (this.buffer[this.position + 7] << 24));
 
 			long value = (((long)high) << 32) | low;
-			position += 8;
+            this.position += 8;
 			return value;
 		}
 
@@ -69,14 +66,14 @@ namespace Harmony.ILCopying
 		{
 			if (!BitConverter.IsLittleEndian)
 			{
-				var bytes = ReadBytes(4);
+                byte[] bytes = ReadBytes(4);
 				Array.Reverse(bytes);
 				return BitConverter.ToSingle(bytes, 0);
 			}
 
 			CheckCanRead(4);
-			var value = BitConverter.ToSingle(buffer, position);
-			position += 4;
+            float value = BitConverter.ToSingle(this.buffer, this.position);
+            this.position += 4;
 			return value;
 		}
 
@@ -84,20 +81,20 @@ namespace Harmony.ILCopying
 		{
 			if (!BitConverter.IsLittleEndian)
 			{
-				var bytes = ReadBytes(8);
+                byte[] bytes = ReadBytes(8);
 				Array.Reverse(bytes);
 				return BitConverter.ToDouble(bytes, 0);
 			}
 
 			CheckCanRead(8);
-			var value = BitConverter.ToDouble(buffer, position);
-			position += 8;
+            double value = BitConverter.ToDouble(this.buffer, this.position);
+            this.position += 8;
 			return value;
 		}
 
 		void CheckCanRead(int count)
 		{
-			if (position + count > buffer.Length)
+			if (this.position + count > this.buffer.Length)
 				throw new ArgumentOutOfRangeException();
 		}
 	}

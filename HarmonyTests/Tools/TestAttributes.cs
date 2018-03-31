@@ -11,9 +11,9 @@ namespace HarmonyTests.Tools
 		[TestMethod]
 		public void TestAttributes()
 		{
-			var type = typeof(AllAttributesClass);
-			var infos = type.GetHarmonyMethods();
-			var info = HarmonyMethod.Merge(infos);
+            System.Type type = typeof(AllAttributesClass);
+            System.Collections.Generic.List<HarmonyMethod> infos = type.GetHarmonyMethods();
+            HarmonyMethod info = HarmonyMethod.Merge(infos);
 			Assert.IsNotNull(info);
 			Assert.AreEqual(typeof(string), info.originalType);
 			Assert.AreEqual("foobar", info.methodName);

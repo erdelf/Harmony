@@ -13,7 +13,7 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Instantiate_TraverseFields_AccessModifiers()
 		{
-			var instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
+            TraverseFields_AccessModifiers instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
 
 			for (int i = 0; i < TraverseFields.testStrings.Length; i++)
 				Assert.AreEqual(TraverseFields.testStrings[i], instance.GetTestField(i));
@@ -39,19 +39,19 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_SilentFailures()
 		{
-			var trv1 = new Traverse(null);
+            Traverse trv1 = new Traverse(null);
 			AssertIsEmpty(trv1);
 
 			trv1 = Traverse.Create(null);
 			AssertIsEmpty(trv1);
 
-			var trv2 = trv1.Type("FooBar");
+            Traverse trv2 = trv1.Type("FooBar");
 			AssertIsEmpty(trv2);
 
-			var trv3 = Traverse.Create<FooBar>().Field("field");
+            Traverse trv3 = Traverse.Create<FooBar>().Field("field");
 			AssertIsEmpty(trv3);
 
-			var trv4 = new Traverse(new FooBar()).Field("field");
+            Traverse trv4 = new Traverse(new FooBar()).Field("field");
 			AssertIsEmpty(trv4.Method("", new object[0]));
 			AssertIsEmpty(trv4.Method("", new Type[0], new object[0]));
 		}
@@ -61,14 +61,14 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Create_With_Null()
 		{
-			var trv = Traverse.Create(null);
+            Traverse trv = Traverse.Create(null);
 
 			Assert.IsNotNull(trv);
 			Assert.IsNull(trv.ToString());
 
-			// field access
+            // field access
 
-			var ftrv = trv.Field("foo");
+            Traverse ftrv = trv.Field("foo");
 			Assert.IsNotNull(ftrv);
 
 			Assert.IsNull(ftrv.GetValue());
@@ -76,9 +76,9 @@ namespace HarmonyTests
 			Assert.AreEqual(0, ftrv.GetValue<int>());
 			Assert.AreSame(ftrv, ftrv.SetValue(123));
 
-			// property access
+            // property access
 
-			var ptrv = trv.Property("foo");
+            Traverse ptrv = trv.Property("foo");
 			Assert.IsNotNull(ptrv);
 
 			Assert.IsNull(ptrv.GetValue());
@@ -86,9 +86,9 @@ namespace HarmonyTests
 			Assert.IsNull(ptrv.GetValue<string>());
 			Assert.AreSame(ptrv, ptrv.SetValue("test"));
 
-			// method access
+            // method access
 
-			var mtrv = trv.Method("zee");
+            Traverse mtrv = trv.Method("zee");
 			Assert.IsNotNull(mtrv);
 
 			Assert.IsNull(mtrv.GetValue());
@@ -102,9 +102,9 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Create_Instance_ToString()
 		{
-			var instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
+            TraverseFields_AccessModifiers instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
 
-			var trv = Traverse.Create(instance);
+            Traverse trv = Traverse.Create(instance);
 			Assert.AreEqual(instance.ToString(), trv.ToString());
 		}
 
@@ -113,10 +113,10 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Create_Type_ToString()
 		{
-			var instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
+            TraverseFields_AccessModifiers instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
 
-			var type = typeof(TraverseFields_AccessModifiers);
-			var trv = Traverse.Create(type);
+            Type type = typeof(TraverseFields_AccessModifiers);
+            Traverse trv = Traverse.Create(type);
 			Assert.AreEqual(type.ToString(), trv.ToString());
 		}
 	}

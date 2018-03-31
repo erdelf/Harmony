@@ -23,45 +23,39 @@ namespace Harmony
 
 		void ImportMethod(MethodInfo theMethod)
 		{
-			method = theMethod;
-			if (method != null)
+            this.method = theMethod;
+			if (this.method != null)
 			{
-				var infos = method.GetHarmonyMethods();
+                List<HarmonyMethod> infos = this.method.GetHarmonyMethods();
 				if (infos != null)
 					Merge(infos).CopyTo(this);
 			}
 		}
 
-		public HarmonyMethod(MethodInfo method)
+        public HarmonyMethod(MethodInfo method) => ImportMethod(method);
+
+        public HarmonyMethod(Type type, string name, Type[] parameters = null)
 		{
+            MethodInfo method = AccessTools.Method(type, name, parameters);
 			ImportMethod(method);
 		}
 
-		public HarmonyMethod(Type type, string name, Type[] parameters = null)
-		{
-			var method = AccessTools.Method(type, name, parameters);
-			ImportMethod(method);
-		}
+        public static List<string> HarmonyFields() => AccessTools
+                .GetFieldNames(typeof(HarmonyMethod))
+                .Where(s => s != "method")
+                .ToList();
 
-		public static List<string> HarmonyFields()
+        public static HarmonyMethod Merge(List<HarmonyMethod> attributes)
 		{
-			return AccessTools
-				.GetFieldNames(typeof(HarmonyMethod))
-				.Where(s => s != "method")
-				.ToList();
-		}
-
-		public static HarmonyMethod Merge(List<HarmonyMethod> attributes)
-		{
-			var result = new HarmonyMethod();
+            HarmonyMethod result = new HarmonyMethod();
 			if (attributes == null) return result;
-			var resultTrv = Traverse.Create(result);
+            Traverse resultTrv = Traverse.Create(result);
 			attributes.ForEach(attribute =>
 			{
-				var trv = Traverse.Create(attribute);
+                Traverse trv = Traverse.Create(attribute);
 				HarmonyFields().ForEach(f =>
 				{
-					var val = trv.Field(f).GetValue();
+                    object val = trv.Field(f).GetValue();
 					if (val != null)
 						resultTrv.Field(f).SetValue(val);
 				});
@@ -75,18 +69,18 @@ namespace Harmony
 		public static void CopyTo(this HarmonyMethod from, HarmonyMethod to)
 		{
 			if (to == null) return;
-			var fromTrv = Traverse.Create(from);
-			var toTrv = Traverse.Create(to);
+            Traverse fromTrv = Traverse.Create(from);
+            Traverse toTrv = Traverse.Create(to);
 			HarmonyMethod.HarmonyFields().ForEach(f =>
 			{
-				var val = fromTrv.Field(f).GetValue();
+                object val = fromTrv.Field(f).GetValue();
 				if (val != null) toTrv.Field(f).SetValue(val);
 			});
 		}
 
 		public static HarmonyMethod Clone(this HarmonyMethod original)
 		{
-			var result = new HarmonyMethod();
+            HarmonyMethod result = new HarmonyMethod();
 			original.CopyTo(result);
 			return result;
 		}
@@ -94,29 +88,26 @@ namespace Harmony
 		public static HarmonyMethod Merge(this HarmonyMethod master, HarmonyMethod detail)
 		{
 			if (detail == null) return master;
-			var result = new HarmonyMethod();
-			var resultTrv = Traverse.Create(result);
-			var masterTrv = Traverse.Create(master);
-			var detailTrv = Traverse.Create(detail);
+            HarmonyMethod result = new HarmonyMethod();
+            Traverse resultTrv = Traverse.Create(result);
+            Traverse masterTrv = Traverse.Create(master);
+            Traverse detailTrv = Traverse.Create(detail);
 			HarmonyMethod.HarmonyFields().ForEach(f =>
 			{
-				var baseValue = masterTrv.Field(f).GetValue();
-				var detailValue = detailTrv.Field(f).GetValue();
+                object baseValue = masterTrv.Field(f).GetValue();
+                object detailValue = detailTrv.Field(f).GetValue();
 				resultTrv.Field(f).SetValue(detailValue ?? baseValue);
 			});
 			return result;
 		}
 
-		public static List<HarmonyMethod> GetHarmonyMethods(this Type type)
-		{
-			return type.GetCustomAttributes(true)
-						.Where(attr => attr is HarmonyAttribute)
-						.Cast<HarmonyAttribute>()
-						.Select(attr => attr.info)
-						.ToList();
-		}
+        public static List<HarmonyMethod> GetHarmonyMethods(this Type type) => type.GetCustomAttributes(true)
+                        .Where(attr => attr is HarmonyAttribute)
+                        .Cast<HarmonyAttribute>()
+                        .Select(attr => attr.info)
+                        .ToList();
 
-		public static List<HarmonyMethod> GetHarmonyMethods(this MethodBase method)
+        public static List<HarmonyMethod> GetHarmonyMethods(this MethodBase method)
 		{
 			if (method is DynamicMethod) return new List<HarmonyMethod>();
 			return method.GetCustomAttributes(true)

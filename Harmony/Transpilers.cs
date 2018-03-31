@@ -8,7 +8,7 @@ namespace Harmony
 	{
 		public static IEnumerable<CodeInstruction> MethodReplacer(this IEnumerable<CodeInstruction> instructions, MethodBase from, MethodBase to)
 		{
-			foreach (var instruction in instructions)
+			foreach (CodeInstruction instruction in instructions)
 			{
 				if (instruction.operand == from)
 					instruction.operand = to;
@@ -20,7 +20,7 @@ namespace Harmony
 		{
 			yield return new CodeInstruction(OpCodes.Ldstr, text);
 			yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(FileLog), nameof(FileLog.Log)));
-			foreach (var instruction in instructions) yield return instruction;
+			foreach (CodeInstruction instruction in instructions) yield return instruction;
 		}
 	}
 }

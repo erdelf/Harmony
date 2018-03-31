@@ -12,9 +12,9 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Property_ToString()
 		{
-			var instance = new TraverseProperties_AccessModifiers(TraverseProperties.testStrings);
+            TraverseProperties_AccessModifiers instance = new TraverseProperties_AccessModifiers(TraverseProperties.testStrings);
 
-			var trv = Traverse.Create(instance).Property(TraverseProperties.propertyNames[0]);
+            Traverse trv = Traverse.Create(instance).Property(TraverseProperties.propertyNames[0]);
 			Assert.AreEqual(TraverseProperties.testStrings[0], trv.ToString());
 		}
 
@@ -24,13 +24,13 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Property_GetValue()
 		{
-			var instance = new TraverseProperties_AccessModifiers(TraverseProperties.testStrings);
-			var trv = Traverse.Create(instance);
+            TraverseProperties_AccessModifiers instance = new TraverseProperties_AccessModifiers(TraverseProperties.testStrings);
+            Traverse trv = Traverse.Create(instance);
 
 			for (int i = 0; i < TraverseProperties.testStrings.Length; i++)
 			{
-				var name = TraverseProperties.propertyNames[i];
-				var ptrv = trv.Property(name);
+                string name = TraverseProperties.propertyNames[i];
+                Traverse ptrv = trv.Property(name);
 				Assert.IsNotNull(ptrv);
 
 				Assert.AreEqual(TraverseProperties.testStrings[i], ptrv.GetValue());
@@ -44,18 +44,18 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Property_SetValue()
 		{
-			var instance = new TraverseProperties_AccessModifiers(TraverseProperties.testStrings);
-			var trv = Traverse.Create(instance);
+            TraverseProperties_AccessModifiers instance = new TraverseProperties_AccessModifiers(TraverseProperties.testStrings);
+            Traverse trv = Traverse.Create(instance);
 
 			for (int i = 0; i < TraverseProperties.testStrings.Length - 1; i++)
 			{
-				var newValue = "newvalue" + i;
+                string newValue = "newvalue" + i;
 
 				// before
 				Assert.AreEqual(TraverseProperties.testStrings[i], instance.GetTestProperty(i));
 
-				var name = TraverseProperties.propertyNames[i];
-				var ptrv = trv.Property(name);
+                string name = TraverseProperties.propertyNames[i];
+                Traverse ptrv = trv.Property(name);
 				ptrv.SetValue(newValue);
 
 				// after

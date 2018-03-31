@@ -12,24 +12,24 @@ namespace Harmony
 		public DelegateTypeFactory()
 		{
 			counter++;
-			var name = new AssemblyName("HarmonyDTFAssembly" + counter);
-			var assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
-			module = assembly.DefineDynamicModule("HarmonyDTFModule" + counter);
+            AssemblyName name = new AssemblyName("HarmonyDTFAssembly" + counter);
+            AssemblyBuilder assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
+            this.module = assembly.DefineDynamicModule("HarmonyDTFModule" + counter);
 		}
 
 		public Type CreateDelegateType(MethodInfo method)
 		{
-			var attr = TypeAttributes.Sealed | TypeAttributes.Public;
-			var typeBuilder = module.DefineType("HarmonyDTFType" + counter, attr, typeof(MulticastDelegate));
+            TypeAttributes attr = TypeAttributes.Sealed | TypeAttributes.Public;
+            TypeBuilder typeBuilder = this.module.DefineType("HarmonyDTFType" + counter, attr, typeof(MulticastDelegate));
 
-			var constructor = typeBuilder.DefineConstructor(
+            ConstructorBuilder constructor = typeBuilder.DefineConstructor(
 				 MethodAttributes.RTSpecialName | MethodAttributes.HideBySig | MethodAttributes.Public,
 				 CallingConventions.Standard, new[] { typeof(object), typeof(IntPtr) });
 			constructor.SetImplementationFlags(MethodImplAttributes.CodeTypeMask);
 
-			var parameters = method.GetParameters();
+            ParameterInfo[] parameters = method.GetParameters();
 
-			var invokeMethod = typeBuilder.DefineMethod(
+            MethodBuilder invokeMethod = typeBuilder.DefineMethod(
 				 "Invoke", MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.Public,
 				 method.ReturnType, parameters.Types());
 			invokeMethod.SetImplementationFlags(MethodImplAttributes.CodeTypeMask);

@@ -13,14 +13,14 @@ namespace HarmonyTests
 		[TestMethod]
 		public void AccessTools_Field()
 		{
-			var type = typeof(AccessToolsClass);
+            Type type = typeof(AccessToolsClass);
 
 			Assert.IsNull(AccessTools.Field(null, null));
 			Assert.IsNull(AccessTools.Field(type, null));
 			Assert.IsNull(AccessTools.Field(null, "field"));
 			Assert.IsNull(AccessTools.Field(type, "unknown"));
 
-			var field = AccessTools.Field(type, "field");
+            FieldInfo field = AccessTools.Field(type, "field");
 			Assert.IsNotNull(field);
 			Assert.AreEqual(type, field.DeclaringType);
 			Assert.AreEqual("field", field.Name);
@@ -29,14 +29,14 @@ namespace HarmonyTests
 		[TestMethod]
 		public void AccessTools_Property()
 		{
-			var type = typeof(AccessToolsClass);
+            Type type = typeof(AccessToolsClass);
 
 			Assert.IsNull(AccessTools.Property(null, null));
 			Assert.IsNull(AccessTools.Property(type, null));
 			Assert.IsNull(AccessTools.Property(null, "property"));
 			Assert.IsNull(AccessTools.Property(type, "unknown"));
 
-			var prop = AccessTools.Property(type, "property");
+            PropertyInfo prop = AccessTools.Property(type, "property");
 			Assert.IsNotNull(prop);
 			Assert.AreEqual(type, prop.DeclaringType);
 			Assert.AreEqual("property", prop.Name);
@@ -45,36 +45,36 @@ namespace HarmonyTests
 		[TestMethod]
 		public void AccessTools_Method()
 		{
-			var type = typeof(AccessToolsClass);
+            Type type = typeof(AccessToolsClass);
 
 			Assert.IsNull(AccessTools.Method(null, null));
 			Assert.IsNull(AccessTools.Method(type, null));
 			Assert.IsNull(AccessTools.Method(null, "method"));
 			Assert.IsNull(AccessTools.Method(type, "unknown"));
 
-			var m1 = AccessTools.Method(type, "method");
+            MethodInfo m1 = AccessTools.Method(type, "method");
 			Assert.IsNotNull(m1);
 			Assert.AreEqual(type, m1.DeclaringType);
 			Assert.AreEqual("method", m1.Name);
 
-			var m2 = AccessTools.Method(type, "method", new Type[] { });
+            MethodInfo m2 = AccessTools.Method(type, "method", new Type[] { });
 			Assert.IsNotNull(m2);
 
-			var m3 = AccessTools.Method(type, "setfield", new Type[] { typeof(string) });
+            MethodInfo m3 = AccessTools.Method(type, "setfield", new Type[] { typeof(string) });
 			Assert.IsNotNull(m3);
 		}
 
 		[TestMethod]
 		public void AccessTools_InnerClass()
 		{
-			var type = typeof(AccessToolsClass);
+            Type type = typeof(AccessToolsClass);
 
 			Assert.IsNull(AccessTools.Inner(null, null));
 			Assert.IsNull(AccessTools.Inner(type, null));
 			Assert.IsNull(AccessTools.Inner(null, "inner"));
 			Assert.IsNull(AccessTools.Inner(type, "unknown"));
 
-			var cls = AccessTools.Inner(type, "inner");
+            Type cls = AccessTools.Inner(type, "inner");
 			Assert.IsNotNull(cls);
 			Assert.AreEqual(type, cls.DeclaringType);
 			Assert.AreEqual("inner", cls.Name);
@@ -83,12 +83,12 @@ namespace HarmonyTests
 		[TestMethod]
 		public void AccessTools_GetTypes()
 		{
-			var empty = AccessTools.GetTypes(null);
+            Type[] empty = AccessTools.GetTypes(null);
 			Assert.IsNotNull(empty);
 			Assert.AreEqual(0, empty.Length);
 
-			// TODO: typeof(null) is ambiguous and resolves for now to <object>. is this a problem?
-			var types = AccessTools.GetTypes(new object[] { "hi", 123, null, new Test_AccessTools() });
+            // TODO: typeof(null) is ambiguous and resolves for now to <object>. is this a problem?
+            Type[] types = AccessTools.GetTypes(new object[] { "hi", 123, null, new Test_AccessTools() });
 			Assert.IsNotNull(types);
 			Assert.AreEqual(4, types.Length);
 			Assert.AreEqual(typeof(string), types[0]);
@@ -111,17 +111,17 @@ namespace HarmonyTests
 		[TestMethod]
 		public void AccessTools_TypeExtension_Description()
 		{
-			var types = new Type[] { typeof(string), typeof(int), null, typeof(void), typeof(Test_AccessTools) };
+            Type[] types = new Type[] { typeof(string), typeof(int), null, typeof(void), typeof(Test_AccessTools) };
 			Assert.AreEqual("(System.String, System.Int32, null, System.Void, HarmonyTests.Test_AccessTools)", types.Description());
 		}
 
 		[TestMethod]
 		public void AccessTools_TypeExtension_Types()
 		{
-			// public static void Resize<T>(ref T[] array, int newSize);
-			var method = typeof(Array).GetMethod("Resize");
-			var pinfo = method.GetParameters();
-			var types = pinfo.Types();
+            // public static void Resize<T>(ref T[] array, int newSize);
+            MethodInfo method = typeof(Array).GetMethod("Resize");
+            ParameterInfo[] pinfo = method.GetParameters();
+            Type[] types = pinfo.Types();
 
 			Assert.IsNotNull(types);
 			Assert.AreEqual(2, types.Length);

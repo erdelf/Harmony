@@ -2,7 +2,7 @@
 {
 	public class AccessToolsClass
 	{
-		private class inner
+		private class Inner
 		{
 		}
 
@@ -10,36 +10,27 @@
 		private string field2;
 
 		private int _property;
-		private int property
+		private int Property
+        {
+            get => this._property;
+            set => this._property = value;
+        }
+        private int Property2
+        {
+            get => this._property;
+            set => this._property = value;
+        }
+
+        public AccessToolsClass()
 		{
-			get { return _property; }
-			set { _property = value; }
-		}
-		private int property2
-		{
-			get { return _property; }
-			set { _property = value; }
+            this.field = "hello";
+            this.field2 = "dummy";
 		}
 
-		public AccessToolsClass()
-		{
-			field = "hello";
-			field2 = "dummy";
-		}
+        public string Method() => this.field;
 
-		public string method()
-		{
-			return field;
-		}
+        public string Method2() => this.field2;
 
-		public string method2()
-		{
-			return field2;
-		}
-
-		public void setfield(string val)
-		{
-			field = val;
-		}
-	}
+        public void Setfield(string val) => this.field = val;
+    }
 }

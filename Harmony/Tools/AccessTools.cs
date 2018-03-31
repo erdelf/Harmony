@@ -18,7 +18,7 @@ namespace Harmony
 
 		public static Type TypeByName(string name)
 		{
-			var type = Type.GetType(name, false);
+            Type type = Type.GetType(name, false);
 			if (type == null)
 				type = AppDomain.CurrentDomain.GetAssemblies()
 					.SelectMany(x => x.GetTypes())
@@ -34,7 +34,7 @@ namespace Harmony
 		{
 			while (true)
 			{
-				var result = action(type);
+				T result = action(type);
 				if (result != null) return result;
 				if (type == typeof(object)) return default(T);
 				type = type.BaseType;
@@ -61,7 +61,7 @@ namespace Harmony
 				result = FindRecursive(type, t => t.GetMethod(name, all));
 			else
 			{
-				var modifiers = new ParameterModifier[] { };
+                ParameterModifier[] modifiers = new ParameterModifier[] { };
 				result = FindRecursive(type, t => t.GetMethod(name, all, null, parameters, modifiers));
 			}
 			if (result == null) return null;
@@ -78,9 +78,9 @@ namespace Harmony
 
 		public static Type GetReturnedType(MethodBase method)
 		{
-			var constructor = method as ConstructorInfo;
-			if (constructor != null) return typeof(void);
-			return ((MethodInfo)method).ReturnType;
+            if (method is ConstructorInfo constructor)
+                return typeof(void);
+            return ((MethodInfo)method).ReturnType;
 		}
 
 		public static Type Inner(Type type, string name)
@@ -101,23 +101,17 @@ namespace Harmony
 			return parameters.Select(p => p == null ? typeof(object) : p.GetType()).ToArray();
 		}
 
-		public static List<string> GetFieldNames(Type type)
-		{
-			return type.GetFields(all).Select(f => f.Name).ToList();
-		}
+        public static List<string> GetFieldNames(Type type) => type.GetFields(all).Select(f => f.Name).ToList();
 
-		public static List<string> GetFieldNames(object instance)
+        public static List<string> GetFieldNames(object instance)
 		{
 			if (instance == null) return new List<string>();
 			return GetFieldNames(instance.GetType());
 		}
 
-		public static List<string> GetPropertyNames(Type type)
-		{
-			return type.GetProperties(all).Select(f => f.Name).ToList();
-		}
+        public static List<string> GetPropertyNames(Type type) => type.GetProperties(all).Select(f => f.Name).ToList();
 
-		public static List<string> GetPropertyNames(object instance)
+        public static List<string> GetPropertyNames(object instance)
 		{
 			if (instance == null) return new List<string>();
 			return GetPropertyNames(instance.GetType());
@@ -132,24 +126,12 @@ namespace Harmony
 			return null;
 		}
 
-		public static bool isStruct(Type type)
-		{
-			return type.IsValueType && !isValue(type) && !isVoid(type);
-		}
+        public static bool IsStruct(Type type) => type.IsValueType && !IsValue(type) && !IsVoid(type);
 
-		public static bool isClass(Type type)
-		{
-			return !type.IsValueType;
-		}
+        public static bool IsClass(Type type) => !type.IsValueType;
 
-		public static bool isValue(Type type)
-		{
-			return type.IsPrimitive || type.IsEnum;
-		}
+        public static bool IsValue(Type type) => type.IsPrimitive || type.IsEnum;
 
-		public static bool isVoid(Type type)
-		{
-			return type == typeof(void);
-		}
-	}
+        public static bool IsVoid(Type type) => type == typeof(void);
+    }
 }

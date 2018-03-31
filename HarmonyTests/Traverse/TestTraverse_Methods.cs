@@ -11,8 +11,8 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Missing_Method()
 		{
-			var instance = new TraverseMethods_Instance();
-			var trv = Traverse.Create(instance);
+            TraverseMethods_Instance instance = new TraverseMethods_Instance();
+            Traverse trv = Traverse.Create(instance);
 
 			string methodSig1 = "";
 			try
@@ -28,7 +28,7 @@ namespace HarmonyTests
 			string methodSig2 = "";
 			try
 			{
-				var types = new Type[] { typeof(string), typeof(int) };
+                Type[] types = new Type[] { typeof(string), typeof(int) };
 				trv.Method("FooBar", types, new object[] { "hello", 123 });
 			}
 			catch (MissingMethodException e)
@@ -41,30 +41,30 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Method_Instance()
 		{
-			var instance = new TraverseMethods_Instance();
-			var trv = Traverse.Create(instance);
+            TraverseMethods_Instance instance = new TraverseMethods_Instance();
+            Traverse trv = Traverse.Create(instance);
 
-			instance.Method1_called = false;
-			var mtrv1 = trv.Method("Method1");
+			instance.method1_called = false;
+            Traverse mtrv1 = trv.Method("Method1");
 			Assert.AreEqual(null, mtrv1.GetValue());
-			Assert.AreEqual(true, instance.Method1_called);
+			Assert.AreEqual(true, instance.method1_called);
 
-			var mtrv2 = trv.Method("Method2", new object[] { "arg" });
+            Traverse mtrv2 = trv.Method("Method2", new object[] { "arg" });
 			Assert.AreEqual("argarg", mtrv2.GetValue());
 		}
 
 		[TestMethod]
 		public void Traverse_Method_Static()
 		{
-			var trv = Traverse.Create(typeof(TraverseMethods_Static));
-			var mtrv = trv.Method("StaticMethod", new object[] { 6, 7 });
+            Traverse trv = Traverse.Create(typeof(TraverseMethods_Static));
+            Traverse mtrv = trv.Method("StaticMethod", new object[] { 6, 7 });
 			Assert.AreEqual(42, mtrv.GetValue<int>());
 		}
 
 		[TestMethod]
 		public void Traverse_Method_VariableArguments()
 		{
-			var trv = Traverse.Create(typeof(TraverseMethods_VarArgs));
+            Traverse trv = Traverse.Create(typeof(TraverseMethods_VarArgs));
 
 			Assert.AreEqual(30, trv.Method("Test1", 10, 20).GetValue<int>());
 			Assert.AreEqual(60, trv.Method("Test2", 10, 20, 30).GetValue<int>());
@@ -77,12 +77,12 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Method_RefParameters()
 		{
-			var trv = Traverse.Create(typeof(TraverseMethods_Parameter));
+            Traverse trv = Traverse.Create(typeof(TraverseMethods_Parameter));
 
 			string result = null;
-			var parameters = new object[] { result };
-			var types = new Type[] { typeof(string).MakeByRefType() };
-			var mtrv1 = trv.Method("WithRefParameter", types, parameters);
+            object[] parameters = new object[] { result };
+            Type[] types = new Type[] { typeof(string).MakeByRefType() };
+            Traverse mtrv1 = trv.Method("WithRefParameter", types, parameters);
 			Assert.AreEqual("ok", mtrv1.GetValue<string>());
 			Assert.AreEqual("hello", parameters[0]);
 		}
@@ -90,12 +90,12 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Method_OutParameters()
 		{
-			var trv = Traverse.Create(typeof(TraverseMethods_Parameter));
+            Traverse trv = Traverse.Create(typeof(TraverseMethods_Parameter));
 
 			string result = null;
-			var parameters = new object[] { result };
-			var types = new Type[] { typeof(string).MakeByRefType() };
-			var mtrv1 = trv.Method("WithOutParameter", types, parameters);
+            object[] parameters = new object[] { result };
+            Type[] types = new Type[] { typeof(string).MakeByRefType() };
+            Traverse mtrv1 = trv.Method("WithOutParameter", types, parameters);
 			Assert.AreEqual("ok", mtrv1.GetValue<string>());
 			Assert.AreEqual("hello", parameters[0]);
 		}

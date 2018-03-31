@@ -14,69 +14,69 @@ namespace HarmonyTests.Assets
 	public class TraverseProperties_BaseClass
 	{
 		string _basePropertyField1;
-		protected virtual string baseProperty1
-		{
-			get { return _basePropertyField1; }
-			set { _basePropertyField1 = value; }
-		}
+		protected virtual string BaseProperty1
+        {
+            get => this._basePropertyField1;
+            set => this._basePropertyField1 = value;
+        }
 
-		string _basePropertyField2;
-		protected virtual string baseProperty2
-		{
-			get { return _basePropertyField2; }
-			set { _basePropertyField2 = value; }
-		}
+        string _basePropertyField2;
+		protected virtual string BaseProperty2
+        {
+            get => this._basePropertyField2;
+            set => this._basePropertyField2 = value;
+        }
 
-		public string baseProperty3
-		{
-			get { throw new Exception(); }
-			set { throw new Exception(); }
-		}
-	}
+        public string BaseProperty3
+        {
+            get => throw new Exception();
+            set => throw new Exception();
+        }
+    }
 
 	public class TraverseProperties_AccessModifiers : TraverseProperties_BaseClass
 	{
 		private string _publicPropertyField;
-		public string publicProperty
-		{
-			get { return _publicPropertyField; }
-			set { _publicPropertyField = value; }
-		}
+		public string PublicProperty
+        {
+            get => this._publicPropertyField;
+            set => this._publicPropertyField = value;
+        }
 
-		private string _publicPrivatePropertyField;
-		public string publicPrivateProperty
-		{
-			get { return _publicPrivatePropertyField; }
-			private set { _publicPrivatePropertyField = value; }
-		}
+        private string _publicPrivatePropertyField;
+		public string PublicPrivateProperty
+        {
+            get => this._publicPrivatePropertyField;
+            private set => this._publicPrivatePropertyField = value;
+        }
 
-		string autoProperty { get; set; }
+        string AutoProperty { get; set; }
 
-		protected override string baseProperty1
-		{
-			get { return base.baseProperty1; }
-			set { base.baseProperty1 = value; }
-		}
+		protected override string BaseProperty1
+        {
+            get => base.BaseProperty1;
+            set => base.BaseProperty1 = value;
+        }
 
-		// baseProperty2 defined and used in base class
+        // baseProperty2 defined and used in base class
 
-		string _basePropertyField3;
-		public new string baseProperty3
-		{
-			get { return _basePropertyField3; }
-			set { _basePropertyField3 = value; }
-		}
+        string _basePropertyField3;
+		public new string BaseProperty3
+        {
+            get => this._basePropertyField3;
+            set => this._basePropertyField3 = value;
+        }
 
-		string immediateProperty => TraverseProperties.testStrings.Last();
+        string ImmediateProperty => TraverseProperties.testStrings.Last();
 
 		public TraverseProperties_AccessModifiers(string[] s)
 		{
-			publicProperty = s[0];
-			publicPrivateProperty = s[1];
-			autoProperty = s[2];
-			baseProperty1 = s[3];
-			baseProperty2 = s[4];
-			baseProperty3 = s[5];
+            this.PublicProperty = s[0];
+            this.PublicPrivateProperty = s[1];
+            this.AutoProperty = s[2];
+            this.BaseProperty1 = s[3];
+            this.BaseProperty2 = s[4];
+            this.BaseProperty3 = s[5];
 			// immediateProperty is readonly
 		}
 
@@ -85,19 +85,19 @@ namespace HarmonyTests.Assets
 			switch (n)
 			{
 				case 0:
-					return publicProperty;
+					return this.PublicProperty;
 				case 1:
-					return publicPrivateProperty;
+					return this.PublicPrivateProperty;
 				case 2:
-					return autoProperty;
+					return this.AutoProperty;
 				case 3:
-					return baseProperty1;
+					return this.BaseProperty1;
 				case 4:
-					return baseProperty2;
+					return this.BaseProperty2;
 				case 5:
-					return baseProperty3;
+					return this.BaseProperty3;
 				case 6:
-					return immediateProperty;
+					return this.ImmediateProperty;
 			}
 			return null;
 		}
@@ -107,22 +107,22 @@ namespace HarmonyTests.Assets
 			switch (n)
 			{
 				case 0:
-					publicProperty = value;
+                    this.PublicProperty = value;
 					break;
 				case 1:
-					publicPrivateProperty = value;
+                    this.PublicPrivateProperty = value;
 					break;
 				case 2:
-					autoProperty = value;
+                    this.AutoProperty = value;
 					break;
 				case 3:
-					baseProperty1 = value;
+                    this.BaseProperty1 = value;
 					break;
 				case 4:
-					baseProperty2 = value;
+                    this.BaseProperty2 = value;
 					break;
 				case 5:
-					baseProperty3 = value;
+                    this.BaseProperty3 = value;
 					break;
 				case 6:
 					// immediateProperty = value;
@@ -130,9 +130,6 @@ namespace HarmonyTests.Assets
 			}
 		}
 
-		public override string ToString()
-		{
-			return "TraverseProperties_AccessModifiers";
-		}
-	}
+        public override string ToString() => "TraverseProperties_AccessModifiers";
+    }
 }

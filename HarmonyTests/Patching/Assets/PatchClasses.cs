@@ -7,11 +7,8 @@ namespace HarmonyTests.Assets
 {
 	public class Class1
 	{
-		public static void Method1()
-		{
-			Class1Patch.originalExecuted = true;
-		}
-	}
+        public static void Method1() => Class1Patch.originalExecuted = true;
+    }
 
 	public class Class1Patch
 	{
@@ -25,18 +22,13 @@ namespace HarmonyTests.Assets
 			return true;
 		}
 
-		public static void Postfix()
-		{
-			postfixed = true;
-		}
+        public static void Postfix() => postfixed = true;
 
-		public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
-		{
-			// no-op / passthrough
-			return instructions;
-		}
+        public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions) =>
+            // no-op / passthrough
+            instructions;
 
-		public static void _reset()
+        public static void _reset()
 		{
 			prefixed = false;
 			originalExecuted = false;
@@ -46,11 +38,8 @@ namespace HarmonyTests.Assets
 
 	public class Class2
 	{
-		public void Method2()
-		{
-			Class2Patch.originalExecuted = true;
-		}
-	}
+        public void Method2() => Class2Patch.originalExecuted = true;
+    }
 
 	public class Class2Patch
 	{
@@ -64,18 +53,13 @@ namespace HarmonyTests.Assets
 			return true;
 		}
 
-		public static void Postfix()
-		{
-			postfixed = true;
-		}
+        public static void Postfix() => postfixed = true;
 
-		public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
-		{
-			// no-op / passthrough
-			return instructions;
-		}
+        public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions) =>
+            // no-op / passthrough
+            instructions;
 
-		public static void _reset()
+        public static void _reset()
 		{
 			prefixed = false;
 			originalExecuted = false;

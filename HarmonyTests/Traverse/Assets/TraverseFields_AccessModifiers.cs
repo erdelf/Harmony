@@ -15,10 +15,10 @@
 
 		public TraverseFields_AccessModifiers(string[] s)
 		{
-			publicField = s[0];
-			privateField = s[1];
-			protectedField = s[2];
-			internalField = s[3];
+            this.publicField = s[0];
+            this.privateField = s[1];
+            this.protectedField = s[2];
+            this.internalField = s[3];
 		}
 
 		public string GetTestField(int n)
@@ -26,20 +26,17 @@
 			switch (n)
 			{
 				case 0:
-					return publicField;
+					return this.publicField;
 				case 1:
-					return privateField;
+					return this.privateField;
 				case 2:
-					return protectedField;
+					return this.protectedField;
 				case 3:
-					return internalField;
+					return this.internalField;
 			}
 			return null;
 		}
 
-		public override string ToString()
-		{
-			return "TraverseFields_AccessModifiers";
-		}
-	}
+        public override string ToString() => "TraverseFields_AccessModifiers";
+    }
 }

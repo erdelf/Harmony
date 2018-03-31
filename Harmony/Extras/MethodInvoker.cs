@@ -10,24 +10,18 @@ namespace Harmony
 
 	public class MethodInvoker
 	{
-		public static FastInvokeHandler GetHandler(DynamicMethod methodInfo, Module module)
-		{
-			return Handler(methodInfo, module);
-		}
+        public static FastInvokeHandler GetHandler(DynamicMethod methodInfo, Module module) => Handler(methodInfo, module);
 
-		public static FastInvokeHandler GetHandler(MethodInfo methodInfo)
-		{
-			return Handler(methodInfo, methodInfo.DeclaringType.Module);
-		}
+        public static FastInvokeHandler GetHandler(MethodInfo methodInfo) => Handler(methodInfo, methodInfo.DeclaringType.Module);
 
-		static FastInvokeHandler Handler(MethodInfo methodInfo, Module module, bool directBoxValueAccess = false)
+        static FastInvokeHandler Handler(MethodInfo methodInfo, Module module, bool directBoxValueAccess = false)
 		{
-			var dynamicMethod = new DynamicMethod("FastInvoke_" + methodInfo.Name + "_" + (directBoxValueAccess ? "direct" : "indirect"), typeof(object), new Type[] { typeof(object), typeof(object[]) }, module);
-			var il = dynamicMethod.GetILGenerator();
+            DynamicMethod dynamicMethod = new DynamicMethod("FastInvoke_" + methodInfo.Name + "_" + (directBoxValueAccess ? "direct" : "indirect"), typeof(object), new Type[] { typeof(object), typeof(object[]) }, module);
+            ILGenerator il = dynamicMethod.GetILGenerator();
 
 			bool generateLocalBoxValuePtr = true;
 
-			var ps = methodInfo.GetParameters();
+            ParameterInfo[] ps = methodInfo.GetParameters();
 
 			if (!methodInfo.IsStatic)
 			{
@@ -112,7 +106,7 @@ namespace Harmony
 
 			il.Emit(OpCodes.Ret);
 
-			var invoder = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
+            FastInvokeHandler invoder = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
 			return invoder;
 		}
 

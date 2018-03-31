@@ -10,7 +10,7 @@ namespace Harmony
 	{
 		public static void Log(string str)
 		{
-			var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + Path.DirectorySeparatorChar + "harmony.log.txt";
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + Path.DirectorySeparatorChar + "harmony.log.txt";
 			using (StreamWriter writer = File.AppendText(path))
 			{
 				writer.WriteLine(str);
@@ -19,13 +19,13 @@ namespace Harmony
 
 		public static void Reset()
 		{
-			var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + Path.DirectorySeparatorChar + "harmony.log.txt";
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + Path.DirectorySeparatorChar + "harmony.log.txt";
 			File.Delete(path);
 		}
 
 		public static unsafe void LogBytes(long ptr, int len)
 		{
-			var p = (byte*)ptr;
+            byte* p = (byte*)ptr;
 			string s = "";
 			for (int i = 1; i <= len; i++)
 			{
@@ -46,10 +46,10 @@ namespace Harmony
 
 			byte[] arr = new byte[len];
 			Marshal.Copy((IntPtr)ptr, arr, 0, len);
-			var md5Hash = MD5.Create();
-			var hash = md5Hash.ComputeHash(arr);
+            MD5 md5Hash = MD5.Create();
+            byte[] hash = md5Hash.ComputeHash(arr);
 #pragma warning disable XS0001
-			var sBuilder = new StringBuilder();
+            StringBuilder sBuilder = new StringBuilder();
 #pragma warning restore XS0001
 			for (int i = 0; i < hash.Length; i++)
 				sBuilder.Append(hash[i].ToString("X2"));

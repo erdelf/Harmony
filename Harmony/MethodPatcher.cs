@@ -11,45 +11,45 @@ namespace Harmony
 	{
 		// special parameter names that can be used in prefix and postfix methods
 		//
-		public static string INSTANCE_PARAM = "__instance";
-		public static string RESULT_VAR = "__result";
-		public static string STATE_VAR = "__state";
+		public static string instancePostfix = "__instance";
+		public static string resultPostfix = "__result";
+		public static string stateVar = "__state";
 
 		public static DynamicMethod CreatePatchedMethod(MethodBase original, List<MethodInfo> prefixes, List<MethodInfo> postfixes, List<MethodInfo> transpilers)
 		{
-			if (HarmonyInstance.DEBUG) FileLog.Log("PATCHING " + original.DeclaringType + " " + original);
+			if (HarmonyInstance.debug) FileLog.Log("PATCHING " + original.DeclaringType + " " + original);
 
-			var idx = prefixes.Count() + postfixes.Count();
-			var patch = DynamicTools.CreateDynamicMethod(original, "_Patch" + idx);
-			var il = patch.GetILGenerator();
+            int idx = prefixes.Count() + postfixes.Count();
+            DynamicMethod patch = DynamicTools.CreateDynamicMethod(original, "_Patch" + idx);
+            ILGenerator il = patch.GetILGenerator();
 
-			var originalVariables = DynamicTools.DeclareLocalVariables(original, il);
-			var privateVars = new Dictionary<string, LocalBuilder>();
+            LocalBuilder[] originalVariables = DynamicTools.DeclareLocalVariables(original, il);
+            Dictionary<string, LocalBuilder> privateVars = new Dictionary<string, LocalBuilder>();
 
 			LocalBuilder resultVariable = null;
 			if (idx > 0)
 			{
 				resultVariable = DynamicTools.DeclareLocalVariable(il, AccessTools.GetReturnedType(original));
-				privateVars[RESULT_VAR] = resultVariable;
+				privateVars[resultPostfix] = resultVariable;
 			}
 
 			prefixes.ForEach(prefix =>
 			{
 				prefix.GetParameters()
-					.Where(patchParam => patchParam.Name == STATE_VAR)
+					.Where(patchParam => patchParam.Name == stateVar)
 					.Do(patchParam =>
 					{
-						var privateStateVariable = DynamicTools.DeclareLocalVariable(il, patchParam.ParameterType);
+                        LocalBuilder privateStateVariable = DynamicTools.DeclareLocalVariable(il, patchParam.ParameterType);
 						privateVars[prefix.DeclaringType.FullName] = privateStateVariable;
 					});
 			});
 
-			var afterOriginal1 = il.DefineLabel();
-			var afterOriginal2 = il.DefineLabel();
-			var canHaveJump = AddPrefixes(il, original, prefixes, privateVars, afterOriginal2);
+            Label afterOriginal1 = il.DefineLabel();
+            Label afterOriginal2 = il.DefineLabel();
+            bool canHaveJump = AddPrefixes(il, original, prefixes, privateVars, afterOriginal2);
 
-			var copier = new MethodCopier(original, patch, originalVariables);
-			foreach (var transpiler in transpilers)
+            MethodCopier copier = new MethodCopier(original, patch, originalVariables);
+			foreach (MethodInfo transpiler in transpilers)
 				copier.AddTranspiler(transpiler);
 			copier.Emit(afterOriginal1);
 			Emitter.MarkLabel(il, afterOriginal1);
@@ -64,7 +64,7 @@ namespace Harmony
 				Emitter.Emit(il, OpCodes.Ldloc, resultVariable);
 			Emitter.Emit(il, OpCodes.Ret);
 
-			if (HarmonyInstance.DEBUG)
+			if (HarmonyInstance.debug)
 			{
 				FileLog.Log("DONE");
 				FileLog.Log("");
@@ -94,24 +94,15 @@ namespace Harmony
 			return OpCodes.Ldind_Ref;
 		}
 
-		static HarmonyParameter GetParameterAttribute(this ParameterInfo parameter)
-		{
-			return parameter.GetCustomAttributes(false).FirstOrDefault(attr => attr is HarmonyParameter) as HarmonyParameter;
-		}
+        static HarmonyParameter GetParameterAttribute(this ParameterInfo parameter) => parameter.GetCustomAttributes(false).FirstOrDefault(attr => attr is HarmonyParameter) as HarmonyParameter;
 
-		static HarmonyParameter[] GetParameterAttributes(this MethodInfo method)
-		{
-			return method.GetCustomAttributes(false).Where(attr => attr is HarmonyParameter).Cast<HarmonyParameter>().ToArray();
-		}
+        static HarmonyParameter[] GetParameterAttributes(this MethodInfo method) => method.GetCustomAttributes(false).Where(attr => attr is HarmonyParameter).Cast<HarmonyParameter>().ToArray();
 
-		static HarmonyParameter[] GetParameterAttributes(this Type type)
-		{
-			return type.GetCustomAttributes(false).Where(attr => attr is HarmonyParameter).Cast<HarmonyParameter>().ToArray();
-		}
+        static HarmonyParameter[] GetParameterAttributes(this Type type) => type.GetCustomAttributes(false).Where(attr => attr is HarmonyParameter).Cast<HarmonyParameter>().ToArray();
 
-		static string GetParameterOverride(this ParameterInfo parameter)
+        static string GetParameterOverride(this ParameterInfo parameter)
 		{
-			var paramAttr = parameter.GetParameterAttribute();
+            HarmonyParameter paramAttr = parameter.GetParameterAttribute();
 			if (paramAttr != null && !string.IsNullOrEmpty(paramAttr.OriginalName))
 				return paramAttr.OriginalName;
 
@@ -122,7 +113,7 @@ namespace Harmony
 		{
 			if (patchAttributes.Length > 0)
 			{
-				var paramAttr = patchAttributes.SingleOrDefault(p => p.NewName == name);
+                HarmonyParameter paramAttr = patchAttributes.SingleOrDefault(p => p.NewName == name);
 				if (paramAttr != null && !string.IsNullOrEmpty(paramAttr.OriginalName))
 					return paramAttr.OriginalName;
 			}
@@ -132,7 +123,7 @@ namespace Harmony
 
 		static string GetParameterOverride(this MethodInfo method, string name, bool checkClass)
 		{
-			var customParam = GetParameterOverride(method.GetParameterAttributes(), name);
+            string customParam = GetParameterOverride(method.GetParameterAttributes(), name);
 			if (customParam == null && checkClass)
 				return GetParameterOverride(method.DeclaringType.GetParameterAttributes(), name);
 
@@ -141,12 +132,12 @@ namespace Harmony
 
 		static void EmitCallParameter(ILGenerator il, MethodBase original, MethodInfo patch, Dictionary<string, LocalBuilder> variables)
 		{
-			var isInstance = original.IsStatic == false;
-			var originalParameters = original.GetParameters();
-			var originalParameterNames = originalParameters.Select(p => p.Name).ToArray();
-			foreach (var patchParam in patch.GetParameters())
+            bool isInstance = original.IsStatic == false;
+            ParameterInfo[] originalParameters = original.GetParameters();
+            string[] originalParameterNames = originalParameters.Select(p => p.Name).ToArray();
+			foreach (ParameterInfo patchParam in patch.GetParameters())
 			{
-				if (patchParam.Name == INSTANCE_PARAM)
+				if (patchParam.Name == instancePostfix)
 				{
 					if (!isInstance) throw new Exception("Cannot get instance from static method " + original);
 					if (patchParam.ParameterType.IsByRef)
@@ -156,25 +147,25 @@ namespace Harmony
 					continue;
 				}
 
-				if (patchParam.Name == STATE_VAR)
+				if (patchParam.Name == stateVar)
 				{
-					var ldlocCode = patchParam.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc;
+                    OpCode ldlocCode = patchParam.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc;
 					Emitter.Emit(il, ldlocCode, variables[patch.DeclaringType.FullName]);
 					continue;
 				}
 
-				if (patchParam.Name == RESULT_VAR)
+				if (patchParam.Name == resultPostfix)
 				{
 					if (AccessTools.GetReturnedType(original) == typeof(void))
 						throw new Exception("Cannot get result from void method " + original);
-					var ldlocCode = patchParam.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc;
-					Emitter.Emit(il, ldlocCode, variables[RESULT_VAR]);
+                    OpCode ldlocCode = patchParam.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc;
+					Emitter.Emit(il, ldlocCode, variables[resultPostfix]);
 					continue;
 				}
 
 				string patchParamName = patchParam.Name;
 
-				var originalName = patchParam.GetParameterOverride();
+                string originalName = patchParam.GetParameterOverride();
 				if (originalName != null)
 				{
 					patchParamName = originalName;
@@ -186,19 +177,19 @@ namespace Harmony
 						patchParamName = originalName;
 				}
 
-				var idx = Array.IndexOf(originalParameterNames, patchParamName);
+                int idx = Array.IndexOf(originalParameterNames, patchParamName);
 				if (idx == -1) throw new Exception("Parameter \"" + patchParam.Name + "\" not found in method " + original);
 
-				//   original -> patch     opcode
-				// --------------------------------------
-				// 1 normal   -> normal  : LDARG
-				// 2 normal   -> ref/out : LDARGA
-				// 3 ref/out  -> normal  : LDARG, LDIND_x
-				// 4 ref/out  -> ref/out : LDARG
-				//
-				var originalIsNormal = originalParameters[idx].IsOut == false && originalParameters[idx].ParameterType.IsByRef == false;
-				var patchIsNormal = patchParam.IsOut == false && patchParam.ParameterType.IsByRef == false;
-				var patchArgIndex = idx + (isInstance ? 1 : 0);
+                //   original -> patch     opcode
+                // --------------------------------------
+                // 1 normal   -> normal  : LDARG
+                // 2 normal   -> ref/out : LDARGA
+                // 3 ref/out  -> normal  : LDARG, LDIND_x
+                // 4 ref/out  -> ref/out : LDARG
+                //
+                bool originalIsNormal = originalParameters[idx].IsOut == false && originalParameters[idx].ParameterType.IsByRef == false;
+                bool patchIsNormal = patchParam.IsOut == false && patchParam.ParameterType.IsByRef == false;
+                int patchArgIndex = idx + (isInstance ? 1 : 0);
 
 				// Case 1 + 4
 				if (originalIsNormal == patchIsNormal)
@@ -222,7 +213,7 @@ namespace Harmony
 
 		static bool AddPrefixes(ILGenerator il, MethodBase original, List<MethodInfo> prefixes, Dictionary<string, LocalBuilder> variables, Label label)
 		{
-			var canHaveJump = false;
+            bool canHaveJump = false;
 			prefixes.ForEach(fix =>
 			{
 				EmitCallParameter(il, original, fix, variables);
@@ -238,15 +229,12 @@ namespace Harmony
 			return canHaveJump;
 		}
 
-		static void AddPostfixes(ILGenerator il, MethodBase original, List<MethodInfo> postfixes, Dictionary<string, LocalBuilder> variables)
-		{
-			postfixes.ForEach(fix =>
-			{
-				EmitCallParameter(il, original, fix, variables);
-				Emitter.Emit(il, OpCodes.Call, fix);
-				if (fix.ReturnType != typeof(void))
-					throw new Exception("Postfix patch " + fix + " has not \"void\" return type: " + fix.ReturnType);
-			});
-		}
-	}
+        static void AddPostfixes(ILGenerator il, MethodBase original, List<MethodInfo> postfixes, Dictionary<string, LocalBuilder> variables) => postfixes.ForEach(fix =>
+                                                                                                                                                 {
+                                                                                                                                                     EmitCallParameter(il, original, fix, variables);
+                                                                                                                                                     Emitter.Emit(il, OpCodes.Call, fix);
+                                                                                                                                                     if (fix.ReturnType != typeof(void))
+                                                                                                                                                         throw new Exception("Postfix patch " + fix + " has not \"void\" return type: " + fix.ReturnType);
+                                                                                                                                                 });
+    }
 }

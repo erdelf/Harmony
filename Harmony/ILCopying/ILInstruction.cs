@@ -21,21 +21,21 @@ namespace Harmony.ILCopying
 
 		public CodeInstruction GetCodeInstruction()
 		{
-			var instr = new CodeInstruction(opcode, argument);
-			if (opcode.OperandType == OperandType.InlineNone)
+            CodeInstruction instr = new CodeInstruction(this.opcode, this.argument);
+			if (this.opcode.OperandType == OperandType.InlineNone)
 				instr.operand = null;
-			instr.labels = labels;
+			instr.labels = this.labels;
 			return instr;
 		}
 
 		public int GetSize()
 		{
-			int size = opcode.Size;
+			int size = this.opcode.Size;
 
-			switch (opcode.OperandType)
+			switch (this.opcode.OperandType)
 			{
 				case OperandType.InlineSwitch:
-					size += (1 + ((int[])operand).Length) * 4;
+					size += (1 + ((int[]) this.operand).Length) * 4;
 					break;
 
 				case OperandType.InlineI8:
@@ -70,25 +70,25 @@ namespace Harmony.ILCopying
 
 		public override string ToString()
 		{
-			var instruction = "";
+            string instruction = "";
 
 			AppendLabel(ref instruction, this);
-			instruction = instruction + ": " + opcode.Name;
+			instruction = instruction + ": " + this.opcode.Name;
 
-			if (operand == null)
+			if (this.operand == null)
 				return instruction;
 
 			instruction = instruction + " ";
 
-			switch (opcode.OperandType)
+			switch (this.opcode.OperandType)
 			{
 				case OperandType.ShortInlineBrTarget:
 				case OperandType.InlineBrTarget:
-					AppendLabel(ref instruction, operand);
+					AppendLabel(ref instruction, this.operand);
 					break;
 
 				case OperandType.InlineSwitch:
-					var switchLabels = (ILInstruction[])operand;
+                    ILInstruction[] switchLabels = (ILInstruction[]) this.operand;
 					for (int i = 0; i < switchLabels.Length; i++)
 					{
 						if (i > 0)
@@ -99,11 +99,11 @@ namespace Harmony.ILCopying
 					break;
 
 				case OperandType.InlineString:
-					instruction = instruction + "\"" + operand + "\"";
+					instruction = instruction + "\"" + this.operand + "\"";
 					break;
 
 				default:
-					instruction = instruction + operand;
+					instruction = instruction + this.operand;
 					break;
 			}
 
@@ -112,11 +112,10 @@ namespace Harmony.ILCopying
 
 		static void AppendLabel(ref string str, object argument)
 		{
-			var instruction = argument as ILInstruction;
-			if (instruction != null)
-				str = str + "IL_" + instruction.offset.ToString("X4");
-			else
-				str = str + "IL_" + argument;
-		}
+            if (argument is ILInstruction instruction)
+                str = str + "IL_" + instruction.offset.ToString("X4");
+            else
+                str = str + "IL_" + argument;
+        }
 	}
 }

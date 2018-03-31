@@ -15,22 +15,16 @@ namespace Harmony.ILCopying
 		public MethodCopier(MethodBase fromMethod, DynamicMethod toDynamicMethod, LocalBuilder[] existingVariables = null)
 		{
 			if (fromMethod == null) throw new Exception("method cannot be null");
-			var generator = toDynamicMethod.GetILGenerator();
-			reader = new MethodBodyReader(fromMethod, generator);
-			reader.DeclareVariables(existingVariables);
-			reader.ReadInstructions();
+            ILGenerator generator = toDynamicMethod.GetILGenerator();
+            this.reader = new MethodBodyReader(fromMethod, generator);
+            this.reader.DeclareVariables(existingVariables);
+            this.reader.ReadInstructions();
 		}
 
-		public void AddTranspiler(MethodInfo transpiler)
-		{
-			transpilers.Add(transpiler);
-		}
+        public void AddTranspiler(MethodInfo transpiler) => this.transpilers.Add(transpiler);
 
-		public void Emit(Label endLabel)
-		{
-			reader.FinalizeILCodes(transpilers, endLabel);
-		}
-	}
+        public void Emit(Label endLabel) => this.reader.FinalizeILCodes(this.transpilers, endLabel);
+    }
 
 	public class MethodBodyReader
 	{
@@ -52,7 +46,7 @@ namespace Harmony.ILCopying
 		public static List<ILInstruction> GetInstructions(MethodBase method)
 		{
 			if (method == null) throw new Exception("method cannot be null");
-			var reader = new MethodBodyReader(method, null);
+            MethodBodyReader reader = new MethodBodyReader(method, null);
 			reader.ReadInstructions();
 			return reader.ilInstructions;
 		}
@@ -63,46 +57,48 @@ namespace Harmony.ILCopying
 		{
 			this.generator = generator;
 			this.method = method;
-			module = method.Module;
+            this.module = method.Module;
 
-			var body = method.GetMethodBody();
+            MethodBody body = method.GetMethodBody();
 			if (body == null)
 				throw new ArgumentException("Method has no body");
 
-			var bytes = body.GetILAsByteArray();
+            byte[] bytes = body.GetILAsByteArray();
 			if (bytes == null)
 				throw new ArgumentException("Can not get the bytes of the method");
-			ilBytes = new ByteBuffer(bytes);
-			ilInstructions = new List<ILInstruction>((bytes.Length + 1) / 2);
+            this.ilBytes = new ByteBuffer(bytes);
+            this.ilInstructions = new List<ILInstruction>((bytes.Length + 1) / 2);
 
 			Type type = method.DeclaringType;
 			if (type != null)
 			{
 				if (type.IsGenericType || type.IsGenericTypeDefinition)
-					typeArguments = type.GetGenericArguments();
+                    this.typeArguments = type.GetGenericArguments();
 			}
 			if (method.IsGenericMethod || method.IsGenericMethodDefinition)
-				methodArguments = method.GetGenericArguments();
+                this.methodArguments = method.GetGenericArguments();
 
 			if (!method.IsStatic)
-				this_parameter = new ThisParameter(method);
-			parameters = method.GetParameters();
+                this.this_parameter = new ThisParameter(method);
+            this.parameters = method.GetParameters();
 
-			locals = body.LocalVariables;
-			exceptions = body.ExceptionHandlingClauses;
+            this.locals = body.LocalVariables;
+            this.exceptions = body.ExceptionHandlingClauses;
 		}
 
 		// read and parse IL codes
 
 		public void ReadInstructions()
 		{
-			while (ilBytes.position < ilBytes.buffer.Length)
+			while (this.ilBytes.position < this.ilBytes.buffer.Length)
 			{
-				var loc = ilBytes.position; // get location first (ReadOpCode will advance it)
-				var instruction = new ILInstruction(ReadOpCode());
-				instruction.offset = loc;
-				ReadOperand(instruction);
-				ilInstructions.Add(instruction);
+                int loc = this.ilBytes.position; // get location first (ReadOpCode will advance it)
+                ILInstruction instruction = new ILInstruction(ReadOpCode())
+                {
+                    offset = loc
+                };
+                ReadOperand(instruction);
+                this.ilInstructions.Add(instruction);
 			}
 
 			ResolveBranches();
@@ -110,7 +106,7 @@ namespace Harmony.ILCopying
 
 		void ResolveBranches()
 		{
-			foreach (var instruction in ilInstructions)
+			foreach (ILInstruction instruction in this.ilInstructions)
 			{
 				switch (instruction.opcode.OperandType)
 				{
@@ -120,8 +116,8 @@ namespace Harmony.ILCopying
 						break;
 
 					case OperandType.InlineSwitch:
-						var offsets = (int[])instruction.operand;
-						var branches = new ILInstruction[offsets.Length];
+                        int[] offsets = (int[])instruction.operand;
+                        ILInstruction[] branches = new ILInstruction[offsets.Length];
 						for (int j = 0; j < offsets.Length; j++)
 							branches[j] = GetInstruction(offsets[j]);
 
@@ -134,12 +130,12 @@ namespace Harmony.ILCopying
 		// declare local variables
 		public void DeclareVariables(LocalBuilder[] existingVariables)
 		{
-			if (generator == null) return;
+			if (this.generator == null) return;
 			if (existingVariables != null)
-				variables = existingVariables;
+                this.variables = existingVariables;
 			else
-				variables = locals.Select(
-					lvi => generator.DeclareLocal(lvi.LocalType, lvi.IsPinned)
+                this.variables = this.locals.Select(
+					lvi => this.generator.DeclareLocal(lvi.LocalType, lvi.IsPinned)
 				).ToArray();
 		}
 
@@ -147,49 +143,47 @@ namespace Harmony.ILCopying
 
 		public void FinalizeILCodes(List<MethodInfo> transpilers, Label endLabel)
 		{
-			if (generator == null) return;
+			if (this.generator == null) return;
 
-			// pass1 - define labels and add them to instructions that are target of a jump
-			ilInstructions.ForEach(ilInstruction =>
+            // pass1 - define labels and add them to instructions that are target of a jump
+            this.ilInstructions.ForEach(ilInstruction =>
 			{
 				switch (ilInstruction.opcode.OperandType)
 				{
 					case OperandType.InlineSwitch:
 						{
-							var targets = ilInstruction.operand as ILInstruction[];
-							if (targets != null)
-							{
-								var labels = new List<Label>();
-								foreach (var target in targets)
-								{
-									var label = generator.DefineLabel();
-									target.labels.Add(label);
-									labels.Add(label);
-								}
-								ilInstruction.argument = labels.ToArray();
-							}
-							break;
+                            if (ilInstruction.operand is ILInstruction[] targets)
+                            {
+                                List<Label> labels = new List<Label>();
+                                foreach (ILInstruction target in targets)
+                                {
+                                    Label label = this.generator.DefineLabel();
+                                    target.labels.Add(label);
+                                    labels.Add(label);
+                                }
+                                ilInstruction.argument = labels.ToArray();
+                            }
+                            break;
 						}
 
 					case OperandType.ShortInlineBrTarget:
 					case OperandType.InlineBrTarget:
 						{
-							var target = ilInstruction.operand as ILInstruction;
-							if (target != null)
-							{
-								var label = generator.DefineLabel();
-								target.labels.Add(label);
-								ilInstruction.argument = label;
-							}
-							break;
+                            if (ilInstruction.operand is ILInstruction target)
+                            {
+                                Label label = this.generator.DefineLabel();
+                                target.labels.Add(label);
+                                ilInstruction.argument = label;
+                            }
+                            break;
 						}
 				}
 			});
 
-			// pass2 - filter through all processors
-			var codeTranspiler = new CodeTranspiler(ilInstructions);
+            // pass2 - filter through all processors
+            CodeTranspiler codeTranspiler = new CodeTranspiler(this.ilInstructions);
 			transpilers.ForEach(transpiler => codeTranspiler.Add(transpiler));
-			var codeInstructions = codeTranspiler.GetResult(generator, method)
+            IEnumerable<CodeInstruction> codeInstructions = codeTranspiler.GetResult(this.generator, this.method)
 				.Select(instruction =>
 				{
 					// TODO - improve the logic here. for now, we replace all short jumps
@@ -227,20 +221,20 @@ namespace Harmony.ILCopying
 			// pass3 - mark labels and emit codes
 			codeInstructions.Do(codeInstruction =>
 			{
-				codeInstruction.labels.ForEach(label => Emitter.MarkLabel(generator, label));
+				codeInstruction.labels.ForEach(label => Emitter.MarkLabel(this.generator, label));
 
-				var code = codeInstruction.opcode;
-				var operand = codeInstruction.operand;
+                OpCode code = codeInstruction.opcode;
+                object operand = codeInstruction.operand;
 
 				if (code.OperandType == OperandType.InlineNone)
-					Emitter.Emit(generator, code);
+					Emitter.Emit(this.generator, code);
 				else
 				{
 					if (operand == null) throw new Exception("Wrong null argument: " + codeInstruction);
-					var emitMethod = EmitMethodForType(operand.GetType());
+                    MethodInfo emitMethod = EmitMethodForType(operand.GetType());
 					if (emitMethod == null) throw new Exception("Unknown Emit argument type " + operand.GetType() + " in " + codeInstruction);
-					if (HarmonyInstance.DEBUG) FileLog.Log(Emitter.CodePos(generator) + code + " " + Emitter.FormatArgument(operand));
-					emitMethod.Invoke(generator, new object[] { code, operand });
+					if (HarmonyInstance.debug) FileLog.Log(Emitter.CodePos(this.generator) + code + " " + Emitter.FormatArgument(operand));
+					emitMethod.Invoke(this.generator, new object[] { code, operand });
 				}
 			});
 		}
@@ -291,26 +285,26 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineSwitch:
 					{
-						var length = ilBytes.ReadInt32();
-						var base_offset = ilBytes.position + (4 * length);
-						var branches = new int[length];
+                        int length = this.ilBytes.ReadInt32();
+                        int base_offset = this.ilBytes.position + (4 * length);
+                        int[] branches = new int[length];
 						for (int i = 0; i < length; i++)
-							branches[i] = ilBytes.ReadInt32() + base_offset;
+							branches[i] = this.ilBytes.ReadInt32() + base_offset;
 						instruction.operand = branches;
 						break;
 					}
 
 				case OperandType.ShortInlineBrTarget:
 					{
-						var val = (sbyte)ilBytes.ReadByte();
-						instruction.operand = val + ilBytes.position;
+                        sbyte val = (sbyte) this.ilBytes.ReadByte();
+						instruction.operand = val + this.ilBytes.position;
 						break;
 					}
 
 				case OperandType.InlineBrTarget:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = val + ilBytes.position;
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = val + this.ilBytes.position;
 						break;
 					}
 
@@ -318,13 +312,13 @@ namespace Harmony.ILCopying
 					{
 						if (instruction.opcode == OpCodes.Ldc_I4_S)
 						{
-							var sb = (sbyte)ilBytes.ReadByte();
+                            sbyte sb = (sbyte) this.ilBytes.ReadByte();
 							instruction.operand = sb;
 							instruction.argument = (sbyte)instruction.operand;
 						}
 						else
 						{
-							var b = ilBytes.ReadByte();
+                            byte b = this.ilBytes.ReadByte();
 							instruction.operand = b;
 							instruction.argument = (byte)instruction.operand;
 						}
@@ -333,7 +327,7 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineI:
 					{
-						var val = ilBytes.ReadInt32();
+                        int val = this.ilBytes.ReadInt32();
 						instruction.operand = val;
 						instruction.argument = (int)instruction.operand;
 						break;
@@ -341,7 +335,7 @@ namespace Harmony.ILCopying
 
 				case OperandType.ShortInlineR:
 					{
-						var val = ilBytes.ReadSingle();
+                        float val = this.ilBytes.ReadSingle();
 						instruction.operand = val;
 						instruction.argument = (float)instruction.operand;
 						break;
@@ -349,7 +343,7 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineR:
 					{
-						var val = ilBytes.ReadDouble();
+                        double val = this.ilBytes.ReadDouble();
 						instruction.operand = val;
 						instruction.argument = (double)instruction.operand;
 						break;
@@ -357,7 +351,7 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineI8:
 					{
-						var val = ilBytes.ReadInt64();
+                        long val = this.ilBytes.ReadInt64();
 						instruction.operand = val;
 						instruction.argument = (long)instruction.operand;
 						break;
@@ -365,40 +359,40 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineSig:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = module.ResolveSignature(val);
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = this.module.ResolveSignature(val);
 						instruction.argument = (SignatureHelper)instruction.operand;
 						break;
 					}
 
 				case OperandType.InlineString:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = module.ResolveString(val);
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = this.module.ResolveString(val);
 						instruction.argument = (string)instruction.operand;
 						break;
 					}
 
 				case OperandType.InlineTok:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = module.ResolveMember(val, typeArguments, methodArguments);
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = this.module.ResolveMember(val, this.typeArguments, this.methodArguments);
 						GetMemberInfoValue((MemberInfo)instruction.operand, out instruction.argument);
 						break;
 					}
 
 				case OperandType.InlineType:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = module.ResolveType(val, typeArguments, methodArguments);
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = this.module.ResolveType(val, this.typeArguments, this.methodArguments);
 						instruction.argument = (Type)instruction.operand;
 						break;
 					}
 
 				case OperandType.InlineMethod:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = module.ResolveMethod(val, typeArguments, methodArguments);
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = this.module.ResolveMethod(val, this.typeArguments, this.methodArguments);
 						if (instruction.operand is ConstructorInfo)
 							instruction.argument = (ConstructorInfo)instruction.operand;
 						else
@@ -408,24 +402,24 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineField:
 					{
-						var val = ilBytes.ReadInt32();
-						instruction.operand = module.ResolveField(val, typeArguments, methodArguments);
+                        int val = this.ilBytes.ReadInt32();
+						instruction.operand = this.module.ResolveField(val, this.typeArguments, this.methodArguments);
 						instruction.argument = (FieldInfo)instruction.operand;
 						break;
 					}
 
 				case OperandType.ShortInlineVar:
 					{
-						var idx = ilBytes.ReadByte();
+                        byte idx = this.ilBytes.ReadByte();
 						if (TargetsLocalVariable(instruction.opcode))
 						{
-							var lvi = GetLocalVariable(idx);
+                            LocalVariableInfo lvi = GetLocalVariable(idx);
 							if (lvi == null)
 								instruction.argument = idx;
 							else
 							{
 								instruction.operand = lvi;
-								instruction.argument = variables[lvi.LocalIndex];
+								instruction.argument = this.variables[lvi.LocalIndex];
 							}
 						}
 						else
@@ -438,16 +432,16 @@ namespace Harmony.ILCopying
 
 				case OperandType.InlineVar:
 					{
-						var idx = ilBytes.ReadInt16();
+                        short idx = this.ilBytes.ReadInt16();
 						if (TargetsLocalVariable(instruction.opcode))
 						{
-							var lvi = GetLocalVariable(idx);
+                            LocalVariableInfo lvi = GetLocalVariable(idx);
 							if (lvi == null)
 								instruction.argument = idx;
 							else
 							{
 								instruction.operand = lvi;
-								instruction.argument = variables[lvi.LocalIndex];
+								instruction.argument = this.variables[lvi.LocalIndex];
 							}
 						}
 						else
@@ -466,7 +460,7 @@ namespace Harmony.ILCopying
 		// TODO - implement
 		void ParseExceptions()
 		{
-			foreach (var ehc in exceptions)
+			foreach (ExceptionHandlingClause ehc in this.exceptions)
 			{
 				//Log.Error("ExceptionHandlingClause, flags " + ehc.Flags.ToString());
 
@@ -494,17 +488,17 @@ namespace Harmony.ILCopying
 
 		ILInstruction GetInstruction(int offset)
 		{
-			var lastInstructionIndex = ilInstructions.Count - 1;
-			if (offset < 0 || offset > ilInstructions[lastInstructionIndex].offset)
-				throw new Exception("Instruction offset " + offset + " is outside valid range 0 - " + ilInstructions[lastInstructionIndex].offset);
+            int lastInstructionIndex = this.ilInstructions.Count - 1;
+			if (offset < 0 || offset > this.ilInstructions[lastInstructionIndex].offset)
+				throw new Exception("Instruction offset " + offset + " is outside valid range 0 - " + this.ilInstructions[lastInstructionIndex].offset);
 
 			int min = 0;
 			int max = lastInstructionIndex;
 			while (min <= max)
 			{
 				int mid = min + ((max - min) / 2);
-				var instruction = ilInstructions[mid];
-				var instruction_offset = instruction.offset;
+                ILInstruction instruction = this.ilInstructions[mid];
+                int instruction_offset = instruction.offset;
 
 				if (offset == instruction_offset)
 					return instruction;
@@ -518,30 +512,24 @@ namespace Harmony.ILCopying
 			throw new Exception("Cannot find instruction for " + offset);
 		}
 
-		static bool TargetsLocalVariable(OpCode opcode)
-		{
-			return opcode.Name.Contains("loc");
-		}
+        static bool TargetsLocalVariable(OpCode opcode) => opcode.Name.Contains("loc");
 
-		LocalVariableInfo GetLocalVariable(int index)
-		{
-			return locals == null ? null : locals[index];
-		}
+        LocalVariableInfo GetLocalVariable(int index) => this.locals?[index];
 
-		ParameterInfo GetParameter(int index)
+        ParameterInfo GetParameter(int index)
 		{
 			if (index == 0)
-				return this_parameter;
+				return this.this_parameter;
 
-			return parameters[index - 1];
+			return this.parameters[index - 1];
 		}
 
 		OpCode ReadOpCode()
 		{
-			var op = ilBytes.ReadByte();
+            byte op = this.ilBytes.ReadByte();
 			return op != 0xfe
 				? one_byte_opcodes[op]
-				: two_bytes_opcodes[ilBytes.ReadByte()];
+				: two_bytes_opcodes[this.ilBytes.ReadByte()];
 		}
 
 		MethodInfo EmitMethodForType(Type type)
@@ -566,12 +554,12 @@ namespace Harmony.ILCopying
 			one_byte_opcodes = new OpCode[0xe1];
 			two_bytes_opcodes = new OpCode[0x1f];
 
-			var fields = typeof(OpCodes).GetFields(
+            FieldInfo[] fields = typeof(OpCodes).GetFields(
 				BindingFlags.Public | BindingFlags.Static);
 
-			foreach (var field in fields)
+			foreach (FieldInfo field in fields)
 			{
-				var opcode = (OpCode)field.GetValue(null);
+                OpCode opcode = (OpCode)field.GetValue(null);
 				if (opcode.OpCodeType == OpCodeType.Nternal)
 					continue;
 
@@ -586,9 +574,9 @@ namespace Harmony.ILCopying
 				.ForEach(method =>
 				{
 					if (method.Name != "Emit") return;
-					var pinfos = method.GetParameters();
+                    ParameterInfo[] pinfos = method.GetParameters();
 					if (pinfos.Length != 2) return;
-					var types = pinfos.Select(p => p.ParameterType).ToArray();
+                    Type[] types = pinfos.Select(p => p.ParameterType).ToArray();
 					if (types[0] != typeof(OpCode)) return;
 					emitMethods[types[1]] = method;
 				});
@@ -600,10 +588,10 @@ namespace Harmony.ILCopying
 		{
 			public ThisParameter(MethodBase method)
 			{
-				MemberImpl = method;
-				ClassImpl = method.DeclaringType;
-				NameImpl = "this";
-				PositionImpl = -1;
+                this.MemberImpl = method;
+                this.ClassImpl = method.DeclaringType;
+                this.NameImpl = "this";
+                this.PositionImpl = -1;
 			}
 		}
 	}

@@ -12,9 +12,9 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Field_ToString()
 		{
-			var instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
+            TraverseFields_AccessModifiers instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
 
-			var trv = Traverse.Create(instance).Field(TraverseFields.fieldNames[0]);
+            Traverse trv = Traverse.Create(instance).Field(TraverseFields.fieldNames[0]);
 			Assert.AreEqual(TraverseFields.testStrings[0], trv.ToString());
 		}
 
@@ -24,13 +24,13 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Field_GetValue()
 		{
-			var instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
-			var trv = Traverse.Create(instance);
+            TraverseFields_AccessModifiers instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
+            Traverse trv = Traverse.Create(instance);
 
 			for (int i = 0; i < TraverseFields.testStrings.Length; i++)
 			{
-				var name = TraverseFields.fieldNames[i];
-				var ftrv = trv.Field(name);
+                string name = TraverseFields.fieldNames[i];
+                Traverse ftrv = trv.Field(name);
 				Assert.IsNotNull(ftrv);
 
 				Assert.AreEqual(TraverseFields.testStrings[i], ftrv.GetValue());
@@ -44,18 +44,18 @@ namespace HarmonyTests
 		[TestMethod]
 		public void Traverse_Field_SetValue()
 		{
-			var instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
-			var trv = Traverse.Create(instance);
+            TraverseFields_AccessModifiers instance = new TraverseFields_AccessModifiers(TraverseFields.testStrings);
+            Traverse trv = Traverse.Create(instance);
 
 			for (int i = 0; i < TraverseFields.testStrings.Length; i++)
 			{
-				var newValue = "newvalue" + i;
+                string newValue = "newvalue" + i;
 
 				// before
 				Assert.AreEqual(TraverseFields.testStrings[i], instance.GetTestField(i));
 
-				var name = TraverseFields.fieldNames[i];
-				var ftrv = trv.Field(name);
+                string name = TraverseFields.fieldNames[i];
+                Traverse ftrv = trv.Field(name);
 				ftrv.SetValue(newValue);
 
 				// after

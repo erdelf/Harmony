@@ -18,14 +18,11 @@ namespace Harmony
 
 		public CodeInstruction(CodeInstruction instruction)
 		{
-			opcode = instruction.opcode;
-			operand = instruction.operand;
-			labels = instruction.labels.ToArray().ToList();
+            this.opcode = instruction.opcode;
+            this.operand = instruction.operand;
+            this.labels = instruction.labels.ToArray().ToList();
 		}
 
-		public override string ToString()
-		{
-			return string.Format(opcode + " " + operand);
-		}
-	}
+        public override string ToString() => string.Format(this.opcode + " " + this.operand);
+    }
 }

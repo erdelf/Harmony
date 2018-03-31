@@ -4,43 +4,25 @@ namespace HarmonyTests.Assets
 {
 	public class TraverseMethods_Instance
 	{
-		public bool Method1_called;
+		public bool method1_called;
 
-		private void Method1()
-		{
-			Method1_called = true;
-		}
+        private void Method1() => this.method1_called = true;
 
-		private string Method2(string arg1)
-		{
-			return arg1 + arg1;
-		}
-	}
+        private string Method2(string arg1) => arg1 + arg1;
+    }
 
 	public static class TraverseMethods_Static
 	{
-		static int StaticMethod(int a, int b)
-		{
-			return a * b;
-		}
-	}
+        static int StaticMethod(int a, int b) => a * b;
+    }
 
 	public static class TraverseMethods_VarArgs
 	{
-		static int Test1(int a, int b)
-		{
-			return a + b;
-		}
+        static int Test1(int a, int b) => a + b;
 
-		static int Test2(int a, int b, int c)
-		{
-			return a + b + c;
-		}
-		static int Test3(int multiplier, params int[] n)
-		{
-			return n.Aggregate(0, (acc, x) => acc + x) * multiplier;
-		}
-	}
+        static int Test2(int a, int b, int c) => a + b + c;
+        static int Test3(int multiplier, params int[] n) => n.Aggregate(0, (acc, x) => acc + x) * multiplier;
+    }
 
 	public static class TraverseMethods_Parameter
 	{
@@ -56,9 +38,6 @@ namespace HarmonyTests.Assets
 			return "ok";
 		}
 
-		static T WithGenericParameter<T>(T refParameter)
-		{
-			return refParameter;
-		}
-	}
+        static T WithGenericParameter<T>(T refParameter) => refParameter;
+    }
 }

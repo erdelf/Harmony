@@ -8,28 +8,30 @@ namespace HarmonyTests.Assets
 	public class TraverseTypes<T> where T : new()
 	{
 #pragma warning disable CS0414
-		int IntField;
-		string StringField;
+		int intField;
+		string stringField;
 #pragma warning restore CS0414
-		Type TypeField;
-		IEnumerable<bool> ListOfBoolField;
-		Dictionary<T, List<string>> MixedField;
+		Type typeField;
+		IEnumerable<bool> listOfBoolField;
+		Dictionary<T, List<string>> mixedField;
 
 		public T key;
 
 		public TraverseTypes()
 		{
-			IntField = 100;
-			StringField = "hello";
-			TypeField = typeof(Console);
-			ListOfBoolField = (new bool[] { false, true }).Select(b => !b);
+            this.intField = 100;
+            this.stringField = "hello";
+            this.typeField = typeof(Console);
+            this.listOfBoolField = (new bool[] { false, true }).Select(b => !b);
 
-			var d = new Dictionary<T, List<string>>();
-			var l = new List<string>();
-			l.Add("world");
-			key = new T();
-			d.Add(key, l);
-			MixedField = d;
+            Dictionary<T, List<string>> d = new Dictionary<T, List<string>>();
+            List<string> l = new List<string>
+            {
+                "world"
+            };
+            this.key = new T();
+			d.Add(this.key, l);
+            this.mixedField = d;
 		}
 	}
 
@@ -43,19 +45,13 @@ namespace HarmonyTests.Assets
 				private string field;
 #pragma warning restore CS0414
 
-				public InnerClass2()
-				{
-					field = "helloInstance";
-				}
-			}
+                public InnerClass2() => this.field = "helloInstance";
+            }
 
 			private InnerClass2 inner2;
 
-			public InnerClass1()
-			{
-				inner2 = new InnerClass2();
-			}
-		}
+            public InnerClass1() => this.inner2 = new InnerClass2();
+        }
 
 		private class InnerStaticFieldClass1
 		{
@@ -68,11 +64,8 @@ namespace HarmonyTests.Assets
 
 			private static InnerStaticFieldClass2 inner2;
 
-			public InnerStaticFieldClass1()
-			{
-				inner2 = new InnerStaticFieldClass2();
-			}
-		}
+            public InnerStaticFieldClass1() => inner2 = new InnerStaticFieldClass2();
+        }
 
 		protected static class InnerStaticClass1
 		{
@@ -87,7 +80,7 @@ namespace HarmonyTests.Assets
 
 		public TraverseNestedTypes(string staticValue)
 		{
-			innerInstance = new InnerClass1();
+            this.innerInstance = new InnerClass1();
 			innerStatic = new InnerStaticFieldClass1();
 			InnerStaticClass1.InnerStaticClass2.field = staticValue;
 		}

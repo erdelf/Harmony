@@ -14,12 +14,12 @@ namespace HarmonyTests
 		[TestMethod]
         public void TestMethodInvokerGeneral()
         {
-            var type = typeof(MethodInvokerClass);
+            Type type = typeof(MethodInvokerClass);
             Assert.IsNotNull(type);
-            var method = type.GetMethod("Method1");
+            MethodInfo method = type.GetMethod("Method1");
             Assert.IsNotNull(method);
 
-            var handler = MethodInvoker.GetHandler(method);
+            FastInvokeHandler handler = MethodInvoker.GetHandler(method);
             Assert.IsNotNull(handler);
 
             object[] args = new object[] { 1, 0, 0, /*out*/ null, /*ref*/ new TestMethodInvokerStruct() };
@@ -27,27 +27,29 @@ namespace HarmonyTests
             Assert.AreEqual(args[0], 1);
             Assert.AreEqual(args[1], 1);
             Assert.AreEqual(args[2], 2);
-            Assert.AreEqual(((TestMethodInvokerObject) args[3])?.Value, 1);
-            Assert.AreEqual(((TestMethodInvokerStruct) args[4]).Value, 1);
+            Assert.AreEqual(((TestMethodInvokerObject) args[3])?.value, 1);
+            Assert.AreEqual(((TestMethodInvokerStruct) args[4]).value, 1);
         }
 
         [TestMethod]
         public void TestMethodInvokerSelfObject()
         {
-            var type = typeof(TestMethodInvokerObject);
+            Type type = typeof(TestMethodInvokerObject);
             Assert.IsNotNull(type);
-            var method = type.GetMethod("Method1");
+            MethodInfo method = type.GetMethod("Method1");
             Assert.IsNotNull(method);
 
-            var handler = MethodInvoker.GetHandler(method);
+            FastInvokeHandler handler = MethodInvoker.GetHandler(method);
             Assert.IsNotNull(handler);
 
-            var instance = new TestMethodInvokerObject();
-            instance.Value = 1;
+            TestMethodInvokerObject instance = new TestMethodInvokerObject
+            {
+                value = 1
+            };
 
             object[] args = new object[] { 2 };
             handler(instance, args);
-            Assert.AreEqual(instance.Value, 3);
+            Assert.AreEqual(instance.value, 3);
         }
 
     }

@@ -7,15 +7,12 @@ namespace HarmonyTests.Assets
 {
     public class TestMethodInvokerObject
     {
-        public int Value;
-        public void Method1(int a)
-        {
-            Value += a;
-        }
+        public int value;
+        public void Method1(int a) => this.value += a;
     }
     public struct TestMethodInvokerStruct
     {
-        public int Value;
+        public int value;
     }
     public static class MethodInvokerClass
     {
@@ -24,9 +21,11 @@ namespace HarmonyTests.Assets
         {
             b = b + 1;
             c = b * 2;
-            d = new TestMethodInvokerObject();
-            d.Value = a;
-            e.Value = a;
+            d = new TestMethodInvokerObject
+            {
+                value = a
+            };
+            e.value = a;
         }
 
     }

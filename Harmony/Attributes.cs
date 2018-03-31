@@ -4,11 +4,13 @@ namespace Harmony
 {
 	public enum PropertyMethod
 	{
-		Getter,
+#pragma warning disable IDE1006 // Benennungsstile
+        Getter,
 		Setter
-	}
+#pragma warning restore IDE1006 // Benennungsstile
+    }
 
-	public class HarmonyAttribute : Attribute
+    public class HarmonyAttribute : Attribute
 	{
 		public HarmonyMethod info = new HarmonyMethod();
 	}
@@ -20,67 +22,49 @@ namespace Harmony
 		{
 		}
 
-		public HarmonyPatch(Type type)
+        public HarmonyPatch(Type type) => this.info.originalType = type;
+
+        public HarmonyPatch(string methodName) => this.info.methodName = methodName;
+
+        public HarmonyPatch(string propertyName, PropertyMethod type)
 		{
-			info.originalType = type;
+            string prefix = type == PropertyMethod.Getter ? "get_" : "set_";
+            this.info.methodName = prefix + propertyName;
 		}
 
-		public HarmonyPatch(string methodName)
-		{
-			info.methodName = methodName;
-		}
+        public HarmonyPatch(Type[] parameter) => this.info.parameter = parameter;
 
-		public HarmonyPatch(string propertyName, PropertyMethod type)
+        public HarmonyPatch(Type type, string methodName, Type[] parameter = null)
 		{
-			var prefix = type == PropertyMethod.Getter ? "get_" : "set_";
-			info.methodName = prefix + propertyName;
-		}
-
-		public HarmonyPatch(Type[] parameter)
-		{
-			info.parameter = parameter;
-		}
-
-		public HarmonyPatch(Type type, string methodName, Type[] parameter = null)
-		{
-			info.originalType = type;
-			info.methodName = methodName;
-			info.parameter = parameter;
+            this.info.originalType = type;
+            this.info.methodName = methodName;
+            this.info.parameter = parameter;
 		}
 
 		public HarmonyPatch(Type type, Type[] parameter = null)
 		{
-			info.originalType = type;
-			info.parameter = parameter;
+            this.info.originalType = type;
+            this.info.parameter = parameter;
 		}
 	}
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public class HarmonyPriority : HarmonyAttribute
 	{
-		public HarmonyPriority(int prioritiy)
-		{
-			info.prioritiy = prioritiy;
-		}
-	}
+        public HarmonyPriority(int prioritiy) => this.info.prioritiy = prioritiy;
+    }
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public class HarmonyBefore : HarmonyAttribute
 	{
-		public HarmonyBefore(params string[] before)
-		{
-			info.before = before;
-		}
-	}
+        public HarmonyBefore(params string[] before) => this.info.before = before;
+    }
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public class HarmonyAfter : HarmonyAttribute
 	{
-		public HarmonyAfter(params string[] after)
-		{
-			info.after = after;
-		}
-	}
+        public HarmonyAfter(params string[] after) => this.info.after = after;
+    }
 
 	// If you don't want to use the special method names you can annotate
 	// using the following attributes:
@@ -125,8 +109,8 @@ namespace Harmony
 
 		public HarmonyParameter(string originalName, string newName)
 		{
-			OriginalName = originalName;
-			NewName = newName;
+            this.OriginalName = originalName;
+            this.NewName = newName;
 		}
 	}
 }
