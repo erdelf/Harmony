@@ -19,15 +19,5 @@ namespace Harmony
 				method = AccessTools.Method(patchType, name, parameters);
 			return method;
 		}
-
-		public static void GetPatches(Type patchType, MethodBase original, out MethodInfo prefix, out MethodInfo postfix, out MethodInfo transpiler)
-		{
-            Type type = original.DeclaringType;
-            string methodName = original.Name;
-
-			prefix = GetPatchMethod<HarmonyPrefix>(patchType, "Prefix");
-			postfix = GetPatchMethod<HarmonyPostfix>(patchType, "Postfix");
-			transpiler = GetPatchMethod<HarmonyTranspiler>(patchType, "Transpiler");
-		}
 	}
 }
