@@ -16,21 +16,16 @@ namespace Harmony
 			| BindingFlags.GetProperty
 			| BindingFlags.SetProperty;
 
-		public static Type TypeByName(string name)
-		{
-            Type type = Type.GetType(name, false);
-			if (type == null)
-				type = AppDomain.CurrentDomain.GetAssemblies()
-					.SelectMany(x => x.GetTypes())
-					.FirstOrDefault(x => x.FullName == name);
-			if (type == null)
-				type = AppDomain.CurrentDomain.GetAssemblies()
-					.SelectMany(x => x.GetTypes())
-					.FirstOrDefault(x => x.Name == name);
-			return type;
-		}
+        public static Type TypeByName(string name) => 
+            Type.GetType(name, false) ?? 
+            AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(x => x.GetTypes())
+                    .FirstOrDefault(x => x.FullName == name) ?? 
+            AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(x => x.GetTypes())
+                    .FirstOrDefault(x => x.Name == name);
 
-		public static T FindRecursive<T>(Type type, Func<Type, T> action)
+        public static T FindRecursive<T>(Type type, Func<Type, T> action)
 		{
 			while (true)
 			{

@@ -45,7 +45,7 @@ namespace Harmony
         static Assembly SharedStateAssembly() => AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name.Contains(name));
 
-        internal static PatchInfo GetPatchInfo(MethodBase method)
+        internal static PatchesInfo GetPatchInfo(MethodBase method)
 		{
             byte[] bytes = GetState().GetValueSafe(method);
 			if (bytes == null) return null;
@@ -54,6 +54,6 @@ namespace Harmony
 
         internal static IEnumerable<MethodBase> GetPatchedMethods() => GetState().Keys.AsEnumerable();
 
-        internal static void UpdatePatchInfo(MethodBase method, PatchInfo patchInfo) => GetState()[method] = patchInfo.Serialize();
+        internal static void UpdatePatchInfo(MethodBase method, PatchesInfo patchInfo) => GetState()[method] = patchInfo.Serialize();
     }
 }

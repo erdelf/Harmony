@@ -37,12 +37,13 @@ namespace Harmony
 			return method;
 		}
 
-        public static LocalBuilder[] DeclareLocalVariables(MethodBase original, ILGenerator il) => original.GetMethodBody().LocalVariables.Select(lvi =>
-                                                                                                             {
-                                                                                                                 LocalBuilder localBuilder = il.DeclareLocal(lvi.LocalType, lvi.IsPinned);
-                                                                                                                 Emitter.LogLastLocalVariable(il);
-                                                                                                                 return localBuilder;
-                                                                                                             }).ToArray();
+        public static LocalBuilder[] DeclareLocalVariables(MethodBase original, ILGenerator il) => 
+            original.GetMethodBody().LocalVariables.Select(lvi =>
+            {
+                LocalBuilder localBuilder = il.DeclareLocal(lvi.LocalType, lvi.IsPinned);
+                Emitter.LogLastLocalVariable(il);
+                return localBuilder;
+            }).ToArray();
 
         public static LocalBuilder DeclareLocalVariable(ILGenerator il, Type type)
 		{

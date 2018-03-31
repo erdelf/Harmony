@@ -15,7 +15,7 @@ namespace Harmony
 			public override Type BindToType(string assemblyName, string typeName)
 			{
                 Type[] types = new Type[] {
-					typeof(PatchInfo),
+					typeof(PatchesInfo),
 					typeof(Patch[]),
 					typeof(Patch)
 				};
@@ -27,7 +27,7 @@ namespace Harmony
 			}
 		}
 
-		public static byte[] Serialize(this PatchInfo patchInfo)
+		public static byte[] Serialize(this PatchesInfo patchInfo)
 		{
 #pragma warning disable XS0001
 			using (MemoryStream streamMemory = new MemoryStream())
@@ -39,7 +39,7 @@ namespace Harmony
 #pragma warning restore XS0001
 		}
 
-		public static PatchInfo Deserialize(byte[] bytes)
+		public static PatchesInfo Deserialize(byte[] bytes)
 		{
             BinaryFormatter formatter = new BinaryFormatter
             {
@@ -48,11 +48,11 @@ namespace Harmony
 #pragma warning disable XS0001
             MemoryStream streamMemory = new MemoryStream(bytes);
 #pragma warning restore XS0001
-			return (PatchInfo)formatter.Deserialize(streamMemory);
+			return (PatchesInfo)formatter.Deserialize(streamMemory);
 		}
 
 		// general sorting by (in that order): before, after, priority and index
-		public static int PriorityComparer(object obj, int index, int priority, string[] before, string[] after)
+		public static int PriorityComparer(object obj, int index, string[] before, string[] after)
 		{
             Traverse trv = Traverse.Create(obj);
             string theirOwner = trv.Field("owner").GetValue<string>();
@@ -64,45 +64,42 @@ namespace Harmony
 			if (after != null && Array.IndexOf(after, theirOwner) > -1)
 				return 1;
 
-			if (priority != theirPriority)
-				return -(priority.CompareTo(theirPriority));
-
 			return index.CompareTo(theirIndex);
 		}
 	}
 
 	[Serializable]
-	public class PatchInfo
+	public class PatchesInfo
 	{
 		public Patch[] prefixes;
 		public Patch[] postfixes;
 		public Patch[] transpilers;
 
-		public PatchInfo()
+		public PatchesInfo()
 		{
             this.prefixes = new Patch[0];
             this.postfixes = new Patch[0];
             this.transpilers = new Patch[0];
 		}
 
-		public void AddPrefix(MethodInfo patch, string owner, int priority, string[] before, string[] after)
+		public void AddPrefix(MethodInfo patch, string owner, string[] before, string[] after)
 		{
             System.Collections.Generic.List<Patch> l = this.prefixes.ToList();
-			l.Add(new Patch(patch, this.prefixes.Count() + 1, owner, priority, before, after));
+			l.Add(new Patch(patch, this.prefixes.Count() + 1, owner, before, after));
             this.prefixes = l.ToArray();
 		}
 
-		public void AddPostfix(MethodInfo patch, string owner, int priority, string[] before, string[] after)
+		public void AddPostfix(MethodInfo patch, string owner, string[] before, string[] after)
 		{
             System.Collections.Generic.List<Patch> l = this.postfixes.ToList();
-			l.Add(new Patch(patch, this.postfixes.Count() + 1, owner, priority, before, after));
+			l.Add(new Patch(patch, this.postfixes.Count() + 1, owner, before, after));
             this.postfixes = l.ToArray();
 		}
 
-		public void AddTranspiler(MethodInfo patch, string owner, int priority, string[] before, string[] after)
+		public void AddTranspiler(MethodInfo patch, string owner, string[] before, string[] after)
 		{
             System.Collections.Generic.List<Patch> l = this.transpilers.ToList();
-			l.Add(new Patch(patch, this.transpilers.Count() + 1, owner, priority, before, after));
+			l.Add(new Patch(patch, this.transpilers.Count() + 1, owner, before, after));
             this.transpilers = l.ToArray();
 		}
 	}
@@ -112,19 +109,17 @@ namespace Harmony
 	{
 		readonly public int index;
 		readonly public string owner;
-		readonly public int priority;
 		readonly public string[] before;
 		readonly public string[] after;
 
 		readonly public MethodInfo patch;
 
-		public Patch(MethodInfo patch, int index, string owner, int priority, string[] before, string[] after)
+		public Patch(MethodInfo patch, int index, string owner, string[] before, string[] after)
 		{
 			if (patch is DynamicMethod) throw new Exception("Cannot directly reference dynamic method \"" + patch + "\" in Harmony. Use a factory method instead that will return the dynamic method.");
 
 			this.index = index;
 			this.owner = owner;
-			this.priority = priority;
 			this.before = before;
 			this.after = after;
 			this.patch = patch;
@@ -144,7 +139,7 @@ namespace Harmony
 
         public override bool Equals(object obj) => ((obj != null) && (obj is Patch) && (this.patch == ((Patch) obj).patch));
 
-        public int CompareTo(object obj) => PatchInfoSerialization.PriorityComparer(obj, this.index, this.priority, this.before, this.after);
+        public int CompareTo(object obj) => PatchInfoSerialization.PriorityComparer(obj, this.index, this.before, this.after);
 
         public override int GetHashCode() => this.patch.GetHashCode();
     }

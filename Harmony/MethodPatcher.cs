@@ -94,42 +94,6 @@ namespace Harmony
 			return OpCodes.Ldind_Ref;
 		}
 
-        static HarmonyParameter GetParameterAttribute(this ParameterInfo parameter) => parameter.GetCustomAttributes(false).FirstOrDefault(attr => attr is HarmonyParameter) as HarmonyParameter;
-
-        static HarmonyParameter[] GetParameterAttributes(this MethodInfo method) => method.GetCustomAttributes(false).Where(attr => attr is HarmonyParameter).Cast<HarmonyParameter>().ToArray();
-
-        static HarmonyParameter[] GetParameterAttributes(this Type type) => type.GetCustomAttributes(false).Where(attr => attr is HarmonyParameter).Cast<HarmonyParameter>().ToArray();
-
-        static string GetParameterOverride(this ParameterInfo parameter)
-		{
-            HarmonyParameter paramAttr = parameter.GetParameterAttribute();
-			if (paramAttr != null && !string.IsNullOrEmpty(paramAttr.OriginalName))
-				return paramAttr.OriginalName;
-
-			return null;
-		}
-
-		static string GetParameterOverride(HarmonyParameter[] patchAttributes, string name)
-		{
-			if (patchAttributes.Length > 0)
-			{
-                HarmonyParameter paramAttr = patchAttributes.SingleOrDefault(p => p.NewName == name);
-				if (paramAttr != null && !string.IsNullOrEmpty(paramAttr.OriginalName))
-					return paramAttr.OriginalName;
-			}
-
-			return null;
-		}
-
-		static string GetParameterOverride(this MethodInfo method, string name, bool checkClass)
-		{
-            string customParam = GetParameterOverride(method.GetParameterAttributes(), name);
-			if (customParam == null && checkClass)
-				return GetParameterOverride(method.DeclaringType.GetParameterAttributes(), name);
-
-			return customParam;
-		}
-
 		static void EmitCallParameter(ILGenerator il, MethodBase original, MethodInfo patch, Dictionary<string, LocalBuilder> variables)
 		{
             bool isInstance = original.IsStatic == false;
@@ -164,18 +128,6 @@ namespace Harmony
 				}
 
 				string patchParamName = patchParam.Name;
-
-                string originalName = patchParam.GetParameterOverride();
-				if (originalName != null)
-				{
-					patchParamName = originalName;
-				}
-				else
-				{
-					originalName = patch.GetParameterOverride(patchParamName, true);
-					if (originalName != null)
-						patchParamName = originalName;
-				}
 
                 int idx = Array.IndexOf(originalParameterNames, patchParamName);
 				if (idx == -1) throw new Exception("Parameter \"" + patchParam.Name + "\" not found in method " + original);
@@ -229,12 +181,13 @@ namespace Harmony
 			return canHaveJump;
 		}
 
-        static void AddPostfixes(ILGenerator il, MethodBase original, List<MethodInfo> postfixes, Dictionary<string, LocalBuilder> variables) => postfixes.ForEach(fix =>
-                                                                                                                                                 {
-                                                                                                                                                     EmitCallParameter(il, original, fix, variables);
-                                                                                                                                                     Emitter.Emit(il, OpCodes.Call, fix);
-                                                                                                                                                     if (fix.ReturnType != typeof(void))
-                                                                                                                                                         throw new Exception("Postfix patch " + fix + " has not \"void\" return type: " + fix.ReturnType);
-                                                                                                                                                 });
+        static void AddPostfixes(ILGenerator il, MethodBase original, List<MethodInfo> postfixes, Dictionary<string, LocalBuilder> variables) => 
+            postfixes.ForEach(fix =>
+            {
+                EmitCallParameter(il, original, fix, variables);
+                Emitter.Emit(il, OpCodes.Call, fix);
+                if (fix.ReturnType != typeof(void))
+                    throw new Exception("Postfix patch " + fix + " has not \"void\" return type: " + fix.ReturnType);
+            });
     }
 }

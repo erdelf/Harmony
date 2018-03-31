@@ -14,8 +14,7 @@ namespace Harmony
 		private List<MethodInfo> transpilers = new List<MethodInfo>();
 
         public CodeTranspiler(List<ILInstruction> ilInstructions) => this.codeInstructions = ilInstructions
-                .Select(ilInstruction => ilInstruction.GetCodeInstruction())
-                .ToList().AsEnumerable();
+                .Select(ilInstruction => ilInstruction.GetCodeInstruction());
 
         public void Add(MethodInfo transpiler) => this.transpilers.Add(transpiler);
 
@@ -24,8 +23,7 @@ namespace Harmony
             Assembly enumerableAssembly = type.GetGenericTypeDefinition().Assembly;
             Type genericListType = enumerableAssembly.GetType(typeof(List<>).FullName);
             Type elementType = type.GetGenericArguments()[0];
-            Type listType = enumerableAssembly.GetType(genericListType.MakeGenericType(new Type[] { elementType }).FullName);
-            object list = Activator.CreateInstance(listType);
+            object list = Activator.CreateInstance(enumerableAssembly.GetType(genericListType.MakeGenericType(new Type[] { elementType }).FullName));
             MethodInfo listAdd = list.GetType().GetMethod("Add");
 
 			foreach (object op in enumerable)
@@ -37,15 +35,10 @@ namespace Harmony
 			return list as IEnumerable;
 		}
 
-		public static IEnumerable ConvertInstructions(MethodInfo transpiler, IEnumerable enumerable)
-		{
-            Type type = transpiler.GetParameters()
-				  .Select(p => p.ParameterType)
-				  .FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition().Name.StartsWith("IEnumerable"));
-			return ConvertInstructions(type, enumerable);
-		}
+        public static IEnumerable ConvertInstructions(MethodInfo transpiler, IEnumerable enumerable) => ConvertInstructions(transpiler.GetParameters().
+                Select(p => p.ParameterType).FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition().Name.StartsWith("IEnumerable")), enumerable);
 
-		public IEnumerable<CodeInstruction> GetResult(ILGenerator generator, MethodBase method)
+        public IEnumerable<CodeInstruction> GetResult(ILGenerator generator, MethodBase method)
 		{
 			IEnumerable instructions = this.codeInstructions;
             this.transpilers.ForEach(transpiler =>
@@ -63,8 +56,7 @@ namespace Harmony
 				});
 				instructions = transpiler.Invoke(null, parameter.ToArray()) as IEnumerable;
 			});
-			instructions = ConvertInstructions(typeof(IEnumerable<CodeInstruction>), instructions);
-			return instructions as IEnumerable<CodeInstruction>;
+			return ConvertInstructions(typeof(IEnumerable<CodeInstruction>), instructions) as IEnumerable<CodeInstruction>;
 		}
 	}
 }
