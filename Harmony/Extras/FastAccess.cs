@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	// Based on https://www.codeproject.com/Articles/14973/Dynamic-Code-Generation-vs-Reflection
 

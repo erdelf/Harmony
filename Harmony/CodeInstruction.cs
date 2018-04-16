@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection.Emit;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public class CodeInstruction
 	{

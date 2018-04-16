@@ -1,11 +1,11 @@
-﻿using Harmony.ILCopying;
+﻿using HarmonyErdelf.ILCopying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public static class MethodPatcher
 	{

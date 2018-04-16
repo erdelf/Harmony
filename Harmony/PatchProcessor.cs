@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
-	public class PatchProcessor
+    public class PatchProcessor
 	{
 		static object locker = new object();
 

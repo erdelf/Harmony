@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
-using Harmony.ILCopying;
+using HarmonyErdelf.ILCopying;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System;
 using System.Collections;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
-	public class CodeTranspiler
+    public class CodeTranspiler
 	{
 		private IEnumerable<CodeInstruction> codeInstructions;
 		private List<MethodInfo> transpilers = new List<MethodInfo>();

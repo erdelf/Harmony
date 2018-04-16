@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
 
-namespace Harmony.ILCopying
+namespace HarmonyErdelf.ILCopying
 {
 	public class ILInstruction
 	{

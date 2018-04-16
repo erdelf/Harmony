@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public static class PatchInfoSerialization
 	{

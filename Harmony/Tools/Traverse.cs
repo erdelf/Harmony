@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public class Traverse
 	{

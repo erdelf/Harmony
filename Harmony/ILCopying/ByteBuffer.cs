@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Harmony.ILCopying
+namespace HarmonyErdelf.ILCopying
 {
 	public class ByteBuffer
 	{

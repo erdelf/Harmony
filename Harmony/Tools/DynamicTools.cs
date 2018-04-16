@@ -1,11 +1,11 @@
-﻿using Harmony.ILCopying;
+﻿using HarmonyErdelf.ILCopying;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public static class DynamicTools
 	{

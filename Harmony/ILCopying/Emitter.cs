@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
-namespace Harmony.ILCopying
+namespace HarmonyErdelf.ILCopying
 {
 	public static class Emitter
 	{

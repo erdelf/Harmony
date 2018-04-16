@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public static class FileLog
 	{

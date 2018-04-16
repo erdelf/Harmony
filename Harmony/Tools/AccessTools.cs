@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Harmony
+namespace HarmonyErdelf
 {
 	public static class AccessTools
 	{

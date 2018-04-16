@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 
-namespace Harmony.ILCopying
+namespace HarmonyErdelf.ILCopying
 {
 	public class MethodCopier
 	{

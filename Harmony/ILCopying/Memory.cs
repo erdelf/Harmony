@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Harmony.ILCopying
+namespace HarmonyErdelf.ILCopying
 {
     [Flags]
     public enum Protection
